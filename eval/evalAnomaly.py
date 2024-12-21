@@ -11,9 +11,23 @@ import os.path as osp
 from argparse import ArgumentParser
 from ood_metrics import fpr_at_95_tpr, calc_metrics, plot_roc, plot_pr,plot_barcode
 from sklearn.metrics import roc_auc_score, roc_curve, auc, precision_recall_curve, average_precision_score
+from torchvision.transforms import Resize
+from torchvision.transforms import Compose, Resize
+from torchvision.transforms import ToTensor
 
 seed = 42
 
+input_transform = Compose(
+    [
+        Resize((512, 1024), Image.BILINEAR),
+        ToTensor(),
+    ]
+)
+target_transform = Compose(
+    [
+        Resize((512, 1024), Image.NEAREST),
+    ]
+)
 # general reproducibility
 random.seed(seed)
 np.random.seed(seed)
@@ -80,8 +94,9 @@ def main():
     
     for path in glob.glob(os.path.expanduser(str(args.input[0]))):
         print(path)
-        images = torch.from_numpy(np.array(Image.open(path).convert('RGB'))).unsqueeze(0).float()
-        images = images.permute(0,3,1,2)
+        #images = torch.from_numpy(np.array(Image.open(path).convert('RGB'))).unsqueeze(0).float()
+        #images = images.permute(0,3,1,2)
+        images = input_transform((Image.open(path).convert('RGB'))).unsqueeze(0).float().cuda()
         with torch.no_grad():
             result = model(images)
         anomaly_result = 1.0 - np.max(result.squeeze(0).data.cpu().numpy(), axis=0)            
@@ -94,6 +109,7 @@ def main():
            pathGT = pathGT.replace("jpg", "png")  
 
         mask = Image.open(pathGT)
+        mask = target_transform(mask)
         ood_gts = np.array(mask)
 
         if "RoadAnomaly" in pathGT:
