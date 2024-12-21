@@ -102,6 +102,7 @@ def main():
         with torch.no_grad():
             result = model(images)
         #anomaly_result = 1.0 - np.max(result.squeeze(0).data.cpu().numpy(), axis=0)            
+        result = result[:-1]
         anomaly_result = 1.0 - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
         pathGT = path.replace("images", "labels_masks")                
         if "RoadObsticle21" in pathGT:
