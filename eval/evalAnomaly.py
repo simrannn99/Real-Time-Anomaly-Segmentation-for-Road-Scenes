@@ -100,7 +100,7 @@ def main():
         #images = images.permute(0,3,1,2)
         images = input_transform((Image.open(path).convert('RGB'))).unsqueeze(0).float().cuda()
         with torch.no_grad():
-            result = model(images)
+            result = model(images).squeeze(0)
         #anomaly_result = 1.0 - np.max(result.squeeze(0).data.cpu().numpy(), axis=0)            
         result = result[:-1]
         anomaly_result = 1.0 - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
