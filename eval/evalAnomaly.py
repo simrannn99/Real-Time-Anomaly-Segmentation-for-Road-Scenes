@@ -14,6 +14,7 @@ from sklearn.metrics import roc_auc_score, roc_curve, auc, precision_recall_curv
 from torchvision.transforms import Resize
 from torchvision.transforms import Compose, Resize
 from torchvision.transforms import ToTensor
+import torch.nn.functional as F
 
 seed = 42
 
@@ -55,6 +56,7 @@ def main():
     parser.add_argument('--datadir', default="/home/shyam/ViT-Adapter/segmentation/data/cityscapes/")
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=1)
+    parser.add_argument('--temperature', type=float, default=1)
     parser.add_argument('--cpu', action='store_true')
     args = parser.parse_args()
     anomaly_score_list = []
@@ -99,7 +101,8 @@ def main():
         images = input_transform((Image.open(path).convert('RGB'))).unsqueeze(0).float().cuda()
         with torch.no_grad():
             result = model(images)
-        anomaly_result = 1.0 - np.max(result.squeeze(0).data.cpu().numpy(), axis=0)            
+        #anomaly_result = 1.0 - np.max(result.squeeze(0).data.cpu().numpy(), axis=0)            
+        anomaly_result = 1.0 - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
         pathGT = path.replace("images", "labels_masks")                
         if "RoadObsticle21" in pathGT:
            pathGT = pathGT.replace("webp", "png")
