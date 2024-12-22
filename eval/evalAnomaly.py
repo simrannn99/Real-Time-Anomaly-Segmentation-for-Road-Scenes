@@ -107,7 +107,7 @@ def evaluate_model(model, input_paths, args):
             anomaly_result = - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
         elif args.metric == "maxLogit":
             anomaly_result = - torch.max(result, dim=0)[0]
-        elif args.metric == 'maxEntropy':
+        elif args.metric == "maxEntropy":
             anomaly_result = torch.sum(
                 -F.softmax(result, dim=0) * F.log_softmax(result, dim=0),
                 dim=0
