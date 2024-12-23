@@ -104,7 +104,7 @@ def evaluate_model(model, input_paths, args):
         # Discard the void class        
         result = result[:-1]
         if args.metric == "msp":
-            anomaly_result = - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
+            anomaly_result = 1 - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
         elif args.metric == "maxLogit":
             anomaly_result = - torch.max(result, dim=0)[0]
         elif args.metric == "maxEntropy":
@@ -142,6 +142,28 @@ def calculate_metrics(ood_gts, anomaly_scores):
     fpr = fpr_at_95_tpr(val_out, val_label)
 
     return prc_auc, fpr
+
+def extract_dataset_name(path):
+    if 'RoadAnomaly21' in path:
+        dataset_name = 'RoadAnomaly21'
+    elif 'RoadAnomaly' in path:
+        dataset_name = 'RoadAnomaly'
+    elif 'RoadObsticle21' in path:
+        dataset_name = 'RoadObsticle21'
+    elif 'fs_static' in path:
+        dataset_name = 'fs_static'
+    elif 'FS_LostFound_full' in path:
+        dataset_name = 'FS_LostFound_full'
+    else:
+        dataset_name = 'Unknown'
+    return dataset_name
+
+# Define color codes using ANSI escape sequences
+class ConsoleColors:
+    YELLOW = '\033[33;1m'
+    PURPLE = '\033[35;1m'
+    BLUE = '\033[34;1m'
+    RESET = '\033[0m'
 
 def main():
     parser = ArgumentParser()
@@ -186,10 +208,17 @@ def main():
     file = open('results.txt', 'a')
     file.write( "\n")
     # Log the results
-    print(f'Metric: {args.metric}')
-    print(f'AUPRC score: {prc_auc*100.0}')
-    print(f'FPR@TPR95: {fpr*100.0}')
-    file.write(('    AUPRC score:' + str(prc_auc*100.0) + '   FPR@TPR95:' + str(fpr*100.0) ))
+    dataset_name = extract_dataset_name(input_paths[0])
+    print(f'{ConsoleColors.YELLOW}Dataset name: {ConsoleColors.RESET}{dataset_name}')
+    print(f'{ConsoleColors.PURPLE}Metric: {ConsoleColors.RESET}{args.metric}')
+    file.write('Dataset name: '+dataset_name)
+    file.write('\n\tMetric: '+args.metric)
+    if args.metric == "msp":
+        print(f'{ConsoleColors.PURPLE}Temperature: {ConsoleColors.RESET}{args.temperature}')
+        file.write(' Temperature: '+ str(args.temperature))
+    print(f'{ConsoleColors.BLUE}AUPRC score: {ConsoleColors.RESET}{prc_auc * 100.0} %')
+    print(f'{ConsoleColors.BLUE}FPR@TPR95: {ConsoleColors.RESET}{fpr * 100.0} %')
+    file.write(('\n\tAUPRC score: ' + str(prc_auc*100.0) + '   FPR@TPR95: ' + str(fpr*100.0) ))
     file.close()
 
 if __name__ == '__main__':
