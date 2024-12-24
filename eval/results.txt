@@ -110,3 +110,6 @@ Dataset name: fs_static
 Dataset name: fs_static
 	Metric: msp Temperature: 100.0
 	AUPRC score: 11.468375139669511   FPR@TPR95: 59.42518418378814
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1.8
+	AUPRC score: 30.551651872305435   FPR@TPR95: 64.16347168869498

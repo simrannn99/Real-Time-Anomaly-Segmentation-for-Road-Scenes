@@ -90,8 +90,12 @@ def main(args):
         with torch.no_grad():
             outputs = model(inputs)
 
-        iouEvalVal.addBatch(outputs.max(1)[1].unsqueeze(1).data, labels)
-
+        if args.metric=="msp":
+            outputs = torch.max(F.softmax(outputs / args.temperature, dim=1), dim=1)[1]
+        elif args.metric == "maxLogit":
+            outputs = torch.max(outputs, dim=1)[1]
+        
+        iouEvalVal.addBatch(outputs.unsqueeze(1).data, labels)
         filenameSave = filename[0].split("leftImg8bit/")[1] 
 
         print (step, filenameSave)
@@ -144,6 +148,8 @@ if __name__ == '__main__':
     parser.add_argument('--datadir', default="/home/shyam/ViT-Adapter/segmentation/data/cityscapes/")
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=1)
+    parser.add_argument('--metric', default="msp")
+    parser.add_argument('--temperature', type=float, default=1)
     parser.add_argument('--cpu', action='store_true')
 
     main(parser.parse_args())
