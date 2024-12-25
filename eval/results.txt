@@ -113,3 +113,24 @@ Dataset name: fs_static
 Dataset name: RoadAnomaly21
 	Metric: msp Temperature: 1.8
 	AUPRC score: 30.551651872305435   FPR@TPR95: 64.16347168869498
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 29.086076728346693   FPR@TPR95: 62.58734647231057
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 29.086076728346693   FPR@TPR95: 62.58734647231057
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 29.086076728346693   FPR@TPR95: 62.58734647231057
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 29.080022860321296   FPR@TPR95: 62.62812791416822
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 23.383187748817374   FPR@TPR95: 86.35447311219887
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 29.096131403040776   FPR@TPR95: 62.51019265433022
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 29.096131403040776   FPR@TPR95: 62.51019265433022

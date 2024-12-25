@@ -82,6 +82,37 @@ class CrossEntropyLoss2d(torch.nn.Module):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
 
 
+from collections import Counter
+
+def calculate_class_histogram(dataloader):
+    class_counts = Counter()
+    total_pixels = 0
+
+    for images, labels in dataloader:
+        # Flatten the label tensor (batch_size * height * width)
+        flattened_labels = labels.view(-1)
+        
+        # Count occurrences of each class label
+        class_counts.update(flattened_labels.cpu().numpy())
+        total_pixels += flattened_labels.size(0)
+
+    return class_counts, total_pixels
+
+def calculate_class_weights(class_counts, total_pixels, num_classes):
+    class_weights = torch.zeros(num_classes)
+    
+    for class_id in range(num_classes):
+        # Get the frequency of the class (use 1 if class does not exist in the dataset)
+        count = class_counts.get(class_id, 0)
+        
+        # Calculate the weight: inverse of the class frequency (scaled by total number of pixels)
+        class_weights[class_id] = total_pixels / (count + 1e-5)  # Add small epsilon to avoid division by zero
+
+    # Normalize the weights so that the sum is 1
+    class_weights = class_weights / class_weights.sum()
+
+    return class_weights
+
 def train(args, model, enc=False):
     best_acc = 0
 
@@ -142,6 +173,12 @@ def train(args, model, enc=False):
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
+    class_counts, total_pixels = calculate_class_histogram(loader)
+    class_weights = calculate_class_weights(class_counts, total_pixels, NUM_CLASSES)
+    weight = class_weights
+
+    #print("Class Weights:", class_weights)
+
     if args.cuda:
         weight = weight.cuda()
     criterion = CrossEntropyLoss2d(weight)
@@ -167,7 +204,10 @@ def train(args, model, enc=False):
     #TODO: reduce memory in first gpu: https://discuss.pytorch.org/t/multi-gpu-training-memory-usage-in-balance/4163/4        #https://github.com/pytorch/pytorch/issues/1893
 
     #optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=2e-4)     ## scheduler 1
-    optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4)      ## scheduler 2
+    if args.pretrained:
+        optimizer = Adam(model.parameters(), 5e-5, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4) 
+    else:
+        optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4)      ## scheduler 2
 
     start_epoch = 1
     if args.resume:
@@ -234,7 +274,7 @@ def train(args, model, enc=False):
             loss.backward()
             optimizer.step()
 
-            epoch_loss.append(loss.data[0])
+            epoch_loss.append(loss.item())
             time_train.append(time.time() - start_time)
 
             if (doIouTrain):
@@ -294,7 +334,7 @@ def train(args, model, enc=False):
             outputs = model(inputs, only_encode=enc) 
 
             loss = criterion(outputs, targets[:, 0])
-            epoch_loss_val.append(loss.data[0])
+            epoch_loss_val.append(loss.item())
             time_val.append(time.time() - start_time)
 
 
@@ -455,6 +495,24 @@ def main(args):
     f.close()
     """
 
+    if args.pretrained:
+        def load_my_state_dict(model, state_dict):  # custom function to load model when not all dict elements
+            own_state = model.state_dict()
+            for name, param in state_dict.items():
+                if name not in own_state:
+                    if name.startswith('module.'):
+                        own_state[name.split('module.')[-1]].copy_(param)
+                    else:
+                        print(name, ' not loaded')
+                        continue
+                else:
+                    own_state[name].copy_(param)
+            return model
+
+        weights_path = args.loadDir + args.loadWeights
+        model = load_my_state_dict(model, torch.load(weights_path))
+
+
     #train(args, model)
     if (not args.decoder):
         print("========== ENCODER TRAINING ===========")
@@ -467,7 +525,7 @@ def main(args):
             print("Loading encoder pretrained in imagenet")
             from erfnet_imagenet import ERFNet as ERFNet_imagenet
             pretrainedEnc = torch.nn.DataParallel(ERFNet_imagenet(1000))
-            pretrainedEnc.load_state_dict(torch.load(args.pretrainedEncoder)['state_dict'])
+            pretrainedEnc.load_state_dict(torch.load(args.pretrainedEncoder)['state_dict'], strict=False)
             pretrainedEnc = next(pretrainedEnc.children()).features.encoder
             if (not args.cuda):
                 pretrainedEnc = pretrainedEnc.cpu()     #because loaded encoder is probably saved in cuda
@@ -487,7 +545,7 @@ if __name__ == '__main__':
     parser.add_argument('--state')
 
     parser.add_argument('--port', type=int, default=8097)
-    parser.add_argument('--datadir', default=os.getenv("HOME") + "/datasets/cityscapes/")
+    parser.add_argument('--datadir', default="/home/shyam/ViT-Adapter/segmentation/data/cityscapes/")
     parser.add_argument('--height', type=int, default=512)
     parser.add_argument('--num-epochs', type=int, default=150)
     parser.add_argument('--num-workers', type=int, default=4)
@@ -504,4 +562,7 @@ if __name__ == '__main__':
     parser.add_argument('--iouVal', action='store_true', default=True)  
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
 
+    parser.add_argument('--pretrained', action='store_true')
+    parser.add_argument('--loadDir',default="../trained_models/")
+    parser.add_argument('--loadWeights', default="erfnet_pretrained.pth")
     main(parser.parse_args())

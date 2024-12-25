@@ -101,17 +101,20 @@ def evaluate_model(model, input_paths, args):
         images = preprocess_image(path, input_transform)
         with torch.no_grad():
             result = model(images).squeeze(0)  
-        # Discard the void class        
-        result = result[:-1]
-        if args.metric == "msp":
-            anomaly_result = 1 - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
-        elif args.metric == "maxLogit":
-            anomaly_result = - torch.max(result, dim=0)[0]
-        elif args.metric == "maxEntropy":
-            anomaly_result = torch.sum(
-                -F.softmax(result, dim=0) * F.log_softmax(result, dim=0),
-                dim=0
-            ) / torch.log(torch.tensor(result.size(0), dtype=torch.float32))
+        if args.classifier == "void":
+            anomaly_result = F.softmax(result, dim=0)[-1]
+        else:
+            # Discard the void class        
+            result = result[:-1]
+            if args.metric == "msp":
+                anomaly_result = 1 - torch.max(F.softmax(result / args.temperature, dim=0), dim=0)[0]
+            elif args.metric == "maxLogit":
+                anomaly_result = - torch.max(result, dim=0)[0]
+            elif args.metric == "maxEntropy":
+                anomaly_result = torch.sum(
+                    -F.softmax(result, dim=0) * F.log_softmax(result, dim=0),
+                    dim=0
+                ) / torch.log(torch.tensor(result.size(0), dtype=torch.float32))
 
         anomaly_result = anomaly_result.data.cpu().numpy()
         mask, ood_gts = adjust_labels(path)
@@ -184,6 +187,7 @@ def main():
     parser.add_argument('--metric', type=str, default='msp')
     parser.add_argument('--temperature', type=float, default=1)
     parser.add_argument('--cpu', action='store_true')
+    parser.add_argument('--classifier', type=str, default=None)
     args = parser.parse_args()
 
     # Load the model
