@@ -76,7 +76,7 @@ class CrossEntropyLoss2d(torch.nn.Module):
     def __init__(self, weight=None):
         super().__init__()
 
-        self.loss = torch.nn.NLLLoss2d(weight)
+        self.loss = torch.nn.NLLLoss2d(weight, device_ids=[0, 1, 2])
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
@@ -233,6 +233,7 @@ def train(args, model, enc=False):
         board = Dashboard(args.port)
 
     for epoch in range(start_epoch, args.num_epochs+1):
+        torch.cuda.empty_cache()
         print("----- TRAINING - EPOCH", epoch, "-----")
 
         scheduler.step(epoch)    ## scheduler 2
@@ -444,7 +445,7 @@ def main(args):
     copyfile(args.model + ".py", savedir + '/' + args.model + ".py")
     
     if args.cuda:
-        model = torch.nn.DataParallel(model).cuda()
+        model = torch.nn.DataParallel(model,device_ids=[0, 1, 2]).cuda()
     
     if args.state:
         #if args.state is provided then load this state for training
@@ -533,7 +534,7 @@ def main(args):
             pretrainedEnc = next(model.children()).encoder
         model = model_file.Net(NUM_CLASSES, encoder=pretrainedEnc)  #Add decoder to encoder
         if args.cuda:
-            model = torch.nn.DataParallel(model).cuda()
+            model = torch.nn.DataParallel(model, device_ids=[0, 1, 2]).cuda()
         #When loading encoder reinitialize weights for decoder because they are set to 0 when training dec
     model = train(args, model, False)   #Train decoder
     print("========== TRAINING FINISHED ===========")
