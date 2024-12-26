@@ -74,7 +74,7 @@ class MyCoTransform(object):
 
 class CrossEntropyLoss2d(torch.nn.Module):
 
-    def __init__(self, args, weight=None):
+    def __init__(self, weight=None):
         super().__init__()
 
         self.loss = torch.nn.NLLLoss2d(weight)
