@@ -3,6 +3,7 @@
 # Eduardo Romera
 #######################
 
+from ast import arg
 import os
 import random
 import time
@@ -73,10 +74,10 @@ class MyCoTransform(object):
 
 class CrossEntropyLoss2d(torch.nn.Module):
 
-    def __init__(self, weight=None):
+    def __init__(self, args, weight=None):
         super().__init__()
 
-        self.loss = torch.nn.NLLLoss2d(weight, device_ids=[0, 1, 2])
+        self.loss = torch.nn.NLLLoss2d(weight, device_ids=list(range(args.num_gpus)))
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
@@ -181,7 +182,7 @@ def train(args, model, enc=False):
 
     if args.cuda:
         weight = weight.cuda()
-    criterion = CrossEntropyLoss2d(weight)
+    criterion = CrossEntropyLoss2d(args, weight)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
@@ -445,7 +446,7 @@ def main(args):
     copyfile(args.model + ".py", savedir + '/' + args.model + ".py")
     
     if args.cuda:
-        model = torch.nn.DataParallel(model,device_ids=[0, 1, 2]).cuda()
+        model = torch.nn.DataParallel(model, device_ids=list(range(args.num_gpus))).cuda()
     
     if args.state:
         #if args.state is provided then load this state for training
@@ -534,7 +535,7 @@ def main(args):
             pretrainedEnc = next(model.children()).encoder
         model = model_file.Net(NUM_CLASSES, encoder=pretrainedEnc)  #Add decoder to encoder
         if args.cuda:
-            model = torch.nn.DataParallel(model, device_ids=[0, 1, 2]).cuda()
+            model = torch.nn.DataParallel(model, device_ids=list(range(args.num_gpus))).cuda()
         #When loading encoder reinitialize weights for decoder because they are set to 0 when training dec
     model = train(args, model, False)   #Train decoder
     print("========== TRAINING FINISHED ===========")
@@ -544,7 +545,7 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', action='store_true', default=True)  #NOTE: cpu-only has not been tested so you might have to change code if you deactivate this flag
     parser.add_argument('--model', default="erfnet")
     parser.add_argument('--state')
-
+    parser.add_argument('--num_gpus', type=int, default=1, help="Number of GPUs to use")
     parser.add_argument('--port', type=int, default=8097)
     parser.add_argument('--datadir', default="/home/shyam/ViT-Adapter/segmentation/data/cityscapes/")
     parser.add_argument('--height', type=int, default=512)
