@@ -77,7 +77,7 @@ class CrossEntropyLoss2d(torch.nn.Module):
     def __init__(self, args, weight=None):
         super().__init__()
 
-        self.loss = torch.nn.NLLLoss2d(weight, device_ids=list(range(args.num_gpus)))
+        self.loss = torch.nn.NLLLoss2d(weight)
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
@@ -182,7 +182,7 @@ def train(args, model, enc=False):
 
     if args.cuda:
         weight = weight.cuda()
-    criterion = CrossEntropyLoss2d(args, weight)
+    criterion = CrossEntropyLoss2d(weight)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
