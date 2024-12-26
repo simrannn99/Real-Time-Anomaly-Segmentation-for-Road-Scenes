@@ -322,47 +322,48 @@ def train(args, model, enc=False):
         epoch_loss_val = []
         time_val = []
 
-        if (doIouVal):
-            iouEvalVal = iouEval(NUM_CLASSES)
-
-        for step, (images, labels) in enumerate(loader_val):
-            start_time = time.time()
-            if args.cuda:
-                images = images.cuda()
-                labels = labels.cuda()
-
-            inputs = Variable(images, volatile=True)    #volatile flag makes it free backward or outputs for eval
-            targets = Variable(labels, volatile=True)
-            outputs = model(inputs, only_encode=enc) 
-
-            loss = criterion(outputs, targets[:, 0])
-            epoch_loss_val.append(loss.item())
-            time_val.append(time.time() - start_time)
-
-
-            #Add batch to calculate TP, FP and FN for iou estimation
+        with torch.no_grad():
             if (doIouVal):
-                #start_time_iou = time.time()
-                iouEvalVal.addBatch(outputs.max(1)[1].unsqueeze(1).data, targets.data)
-                #print ("Time to add confusion matrix: ", time.time() - start_time_iou)
+                iouEvalVal = iouEval(NUM_CLASSES)
+            
+            for step, (images, labels) in enumerate(loader_val):
+                start_time = time.time()
+                if args.cuda:
+                    images = images.cuda()
+                    labels = labels.cuda()
 
-            if args.visualize and args.steps_plot > 0 and step % args.steps_plot == 0:
-                start_time_plot = time.time()
-                image = inputs[0].cpu().data
-                board.image(image, f'VAL input (epoch: {epoch}, step: {step})')
-                if isinstance(outputs, list):   #merge gpu tensors
-                    board.image(color_transform(outputs[0][0].cpu().max(0)[1].data.unsqueeze(0)),
-                    f'VAL output (epoch: {epoch}, step: {step})')
-                else:
-                    board.image(color_transform(outputs[0].cpu().max(0)[1].data.unsqueeze(0)),
-                    f'VAL output (epoch: {epoch}, step: {step})')
-                board.image(color_transform(targets[0].cpu().data),
-                    f'VAL target (epoch: {epoch}, step: {step})')
-                print ("Time to paint images: ", time.time() - start_time_plot)
-            if args.steps_loss > 0 and step % args.steps_loss == 0:
-                average = sum(epoch_loss_val) / len(epoch_loss_val)
-                print(f'VAL loss: {average:0.4} (epoch: {epoch}, step: {step})', 
-                        "// Avg time/img: %.4f s" % (sum(time_val) / len(time_val) / args.batch_size))
+                inputs = Variable(images, volatile=True)    #volatile flag makes it free backward or outputs for eval
+                targets = Variable(labels, volatile=True)
+                outputs = model(inputs, only_encode=enc) 
+
+                loss = criterion(outputs, targets[:, 0])
+                epoch_loss_val.append(loss.item())
+                time_val.append(time.time() - start_time)
+
+
+                #Add batch to calculate TP, FP and FN for iou estimation
+                if (doIouVal):
+                    #start_time_iou = time.time()
+                    iouEvalVal.addBatch(outputs.max(1)[1].unsqueeze(1).data, targets.data)
+                    #print ("Time to add confusion matrix: ", time.time() - start_time_iou)
+
+                if args.visualize and args.steps_plot > 0 and step % args.steps_plot == 0:
+                    start_time_plot = time.time()
+                    image = inputs[0].cpu().data
+                    board.image(image, f'VAL input (epoch: {epoch}, step: {step})')
+                    if isinstance(outputs, list):   #merge gpu tensors
+                        board.image(color_transform(outputs[0][0].cpu().max(0)[1].data.unsqueeze(0)),
+                        f'VAL output (epoch: {epoch}, step: {step})')
+                    else:
+                        board.image(color_transform(outputs[0].cpu().max(0)[1].data.unsqueeze(0)),
+                        f'VAL output (epoch: {epoch}, step: {step})')
+                    board.image(color_transform(targets[0].cpu().data),
+                        f'VAL target (epoch: {epoch}, step: {step})')
+                    print ("Time to paint images: ", time.time() - start_time_plot)
+                if args.steps_loss > 0 and step % args.steps_loss == 0:
+                    average = sum(epoch_loss_val) / len(epoch_loss_val)
+                    print(f'VAL loss: {average:0.4} (epoch: {epoch}, step: {step})', 
+                            "// Avg time/img: %.4f s" % (sum(time_val) / len(time_val) / args.batch_size))
                        
 
         average_epoch_loss_val = sum(epoch_loss_val) / len(epoch_loss_val)
