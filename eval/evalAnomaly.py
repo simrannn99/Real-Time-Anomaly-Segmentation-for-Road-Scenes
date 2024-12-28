@@ -210,12 +210,13 @@ def main():
     if not os.path.exists('results.txt'):
         open('results.txt', 'w').close()
     file = open('results.txt', 'a')
-    file.write( "\n")
+    file.write( "\n\n")
     # Log the results
     dataset_name = extract_dataset_name(input_paths[0])
     print(f'{ConsoleColors.YELLOW}Dataset name: {ConsoleColors.RESET}{dataset_name}')
     print(f'{ConsoleColors.PURPLE}Metric: {ConsoleColors.RESET}{args.metric}')
-    file.write('Dataset name: '+dataset_name)
+    file.write('Weights loaded: ' + args.loadWeights )
+    file.write('\nDataset name: '+dataset_name)
     file.write('\n\tMetric: '+args.metric)
     if args.metric == "msp":
         print(f'{ConsoleColors.PURPLE}Temperature: {ConsoleColors.RESET}{args.temperature}')

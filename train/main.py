@@ -29,6 +29,8 @@ from iouEval import iouEval, getColorEntry
 
 from shutil import copyfile
 
+from calculate_class_weights import calculate_class_weights, calculate_class_weights2, calculate_class_histogram
+
 NUM_CHANNELS = 3
 NUM_CLASSES = 20 #pascal=22, cityscapes=20
 
@@ -81,38 +83,6 @@ class CrossEntropyLoss2d(torch.nn.Module):
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
-
-
-from collections import Counter
-
-def calculate_class_histogram(dataloader):
-    class_counts = Counter()
-    total_pixels = 0
-
-    for images, labels in dataloader:
-        # Flatten the label tensor (batch_size * height * width)
-        flattened_labels = labels.view(-1)
-        
-        # Count occurrences of each class label
-        class_counts.update(flattened_labels.cpu().numpy())
-        total_pixels += flattened_labels.size(0)
-
-    return class_counts, total_pixels
-
-def calculate_class_weights(class_counts, total_pixels, num_classes):
-    class_weights = torch.zeros(num_classes)
-    
-    for class_id in range(num_classes):
-        # Get the frequency of the class (use 1 if class does not exist in the dataset)
-        count = class_counts.get(class_id, 0)
-        
-        # Calculate the weight: inverse of the class frequency (scaled by total number of pixels)
-        class_weights[class_id] = total_pixels / (count + 1e-5)  # Add small epsilon to avoid division by zero
-
-    # Normalize the weights so that the sum is 1
-    class_weights = class_weights / class_weights.sum()
-
-    return class_weights
 
 def train(args, model, enc=False):
     best_acc = 0
@@ -174,14 +144,9 @@ def train(args, model, enc=False):
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True)
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
-    class_counts, total_pixels = calculate_class_histogram(loader)
-    class_weights = calculate_class_weights(class_counts, total_pixels, NUM_CLASSES)
-    weight = class_weights
-
-    #print("Class Weights:", class_weights)
-
     if args.cuda:
         weight = weight.cuda()
+        print(weight)
     criterion = CrossEntropyLoss2d(weight)
     print(type(criterion))
 
