@@ -172,10 +172,10 @@ class SegHead(nn.Sequential):
             conv1x1(hid_channels, num_class)
         )
 
-class ENet(nn.Module):
+class Net(nn.Module):
     def __init__(self, num_class=1, n_channel=3, act_type='prelu', 
                     upsample_type='deconvolution'):
-        super(ENet, self).__init__()
+        super(Net, self).__init__()
         self.initial = InitialBlock(n_channel, 16, act_type)
         self.bottleneck1 = BottleNeck1(16, 64, act_type)
         self.bottleneck2 = BottleNeck23(64, 128, act_type, True)
