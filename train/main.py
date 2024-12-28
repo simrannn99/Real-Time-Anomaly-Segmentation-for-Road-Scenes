@@ -74,6 +74,23 @@ class MyCoTransform(object):
         return input, target
 
 
+class ENetCoTransform(object):
+    def __init__(self, height=512):
+        self.height = height
+        pass
+
+    def __call__(self, input, target):
+        # do something to both images
+        input = Resize(self.height, Image.BILINEAR)(input)
+        target = Resize(self.height, Image.NEAREST)(target)
+
+        input = ToTensor()(input)
+
+        target = ToLabel()(target)
+        target = Relabel(255, 19)(target)
+
+        return input, target
+    
 class CrossEntropyLoss2d(torch.nn.Module):
 
     def __init__(self, weight=None):
@@ -91,53 +108,80 @@ def train(args, model, enc=False):
     #create a loder to run all images and calculate histogram of labels, then create weight array using class balancing
 
     weight = torch.ones(NUM_CLASSES)
-    if (enc):
-        weight[0] = 2.3653597831726	
-        weight[1] = 4.4237880706787	
-        weight[2] = 2.9691488742828	
-        weight[3] = 5.3442072868347	
-        weight[4] = 5.2983593940735	
-        weight[5] = 5.2275490760803	
-        weight[6] = 5.4394111633301	
-        weight[7] = 5.3659925460815	
-        weight[8] = 3.4170460700989	
-        weight[9] = 5.2414722442627	
-        weight[10] = 4.7376127243042	
-        weight[11] = 5.2286224365234	
-        weight[12] = 5.455126285553	
-        weight[13] = 4.3019247055054	
-        weight[14] = 5.4264230728149	
-        weight[15] = 5.4331531524658	
-        weight[16] = 5.433765411377	
-        weight[17] = 5.4631009101868	
-        weight[18] = 5.3947434425354
-    else:
-        weight[0] = 2.8149201869965	
-        weight[1] = 6.9850029945374	
-        weight[2] = 3.7890393733978	
-        weight[3] = 9.9428062438965	
-        weight[4] = 9.7702074050903	
-        weight[5] = 9.5110931396484	
-        weight[6] = 10.311357498169	
-        weight[7] = 10.026463508606	
-        weight[8] = 4.6323022842407	
-        weight[9] = 9.5608062744141	
-        weight[10] = 7.8698215484619	
-        weight[11] = 9.5168733596802	
-        weight[12] = 10.373730659485	
-        weight[13] = 6.6616044044495	
-        weight[14] = 10.260489463806	
-        weight[15] = 10.287888526917	
-        weight[16] = 10.289801597595	
-        weight[17] = 10.405355453491	
-        weight[18] = 10.138095855713	
+    if args.model == "erfnet":
+        if (enc):
+            weight[0] = 2.3653597831726	
+            weight[1] = 4.4237880706787	
+            weight[2] = 2.9691488742828	
+            weight[3] = 5.3442072868347	
+            weight[4] = 5.2983593940735	
+            weight[5] = 5.2275490760803	
+            weight[6] = 5.4394111633301	
+            weight[7] = 5.3659925460815	
+            weight[8] = 3.4170460700989	
+            weight[9] = 5.2414722442627	
+            weight[10] = 4.7376127243042	
+            weight[11] = 5.2286224365234	
+            weight[12] = 5.455126285553	
+            weight[13] = 4.3019247055054	
+            weight[14] = 5.4264230728149	
+            weight[15] = 5.4331531524658	
+            weight[16] = 5.433765411377	
+            weight[17] = 5.4631009101868	
+            weight[18] = 5.3947434425354
+        else:
+            weight[0] = 2.8149201869965	
+            weight[1] = 6.9850029945374	
+            weight[2] = 3.7890393733978	
+            weight[3] = 9.9428062438965	
+            weight[4] = 9.7702074050903	
+            weight[5] = 9.5110931396484	
+            weight[6] = 10.311357498169	
+            weight[7] = 10.026463508606	
+            weight[8] = 4.6323022842407	
+            weight[9] = 9.5608062744141	
+            weight[10] = 7.8698215484619	
+            weight[11] = 9.5168733596802	
+            weight[12] = 10.373730659485	
+            weight[13] = 6.6616044044495	
+            weight[14] = 10.260489463806	
+            weight[15] = 10.287888526917	
+            weight[16] = 10.289801597595	
+            weight[17] = 10.405355453491	
+            weight[18] = 10.138095855713	
 
-    weight[19] = 0
+        weight[19] = 0
+    
+    elif args.model == "enet":
+        weight[0] = 3.36366406
+        weight[1] = 14.04234086
+        weight[2] = 4.9948856
+        weight[3] = 39.25997007
+        weight[4] = 36.5152765
+        weight[5] = 32.90667927
+        weight[6] = 46.27742179
+        weight[7] = 40.67459427
+        weight[8] = 6.71150498
+        weight[9] = 33.5627786
+        weight[10] = 18.54488148
+        weight[11] = 32.99978951
+        weight[12] = 47.68372067
+        weight[13] = 12.70290829
+        weight[14] = 45.20793195
+        weight[15] = 45.7834263
+        weight[16] = 45.82760469
+        weight[17] = 48.40837536
+        weight[18] = 42.76317799
+        weight[19] = 7.8450451 # Weight for class 19
 
     assert os.path.exists(args.datadir), "Error: datadir (dataset directory) could not be loaded"
 
-    co_transform = MyCoTransform(enc, augment=True, height=args.height)#1024)
-    co_transform_val = MyCoTransform(enc, augment=False, height=args.height)#1024)
+    if args.model == "erfnet":   
+        co_transform = MyCoTransform(enc, augment=True, height=args.height)#1024)
+        co_transform_val = MyCoTransform(enc, augment=False, height=args.height)#1024)
+    elif args.model == "enet":
+        co_transform = ENetCoTransform(height=args.height)
+        co_transform_val = ENetCoTransform(height=args.height)
     dataset_train = cityscapes(args.datadir, co_transform, 'train')
     dataset_val = cityscapes(args.datadir, co_transform_val, 'val')
 
@@ -170,10 +214,16 @@ def train(args, model, enc=False):
     #TODO: reduce memory in first gpu: https://discuss.pytorch.org/t/multi-gpu-training-memory-usage-in-balance/4163/4        #https://github.com/pytorch/pytorch/issues/1893
 
     #optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=2e-4)     ## scheduler 1
-    if args.pretrained:
-        optimizer = Adam(model.parameters(), 5e-5, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4) 
-    else:
-        optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4)      ## scheduler 2
+    if args.model == "erfnet":
+        if args.pretrained:
+            optimizer = Adam(model.parameters(), 5e-5, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4) 
+        else:
+            optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4)      ## scheduler 2
+    elif args.model == "enet":
+        if args.pretrained:
+            optimizer = Adam(model.parameters(), 5e-5, weight_decay=2e-4) 
+        else:
+            optimizer = Adam(model.parameters(), 5e-4, weight_decay=2e-4)      ## scheduler 2
 
     start_epoch = 1
     if args.resume:
@@ -191,9 +241,12 @@ def train(args, model, enc=False):
         best_acc = checkpoint['best_acc']
         print("=> Loaded checkpoint at epoch {})".format(checkpoint['epoch']))
 
-    #scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5) # set up scheduler     ## scheduler 1
-    lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
-    scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)                             ## scheduler 2
+    if args.model == "erfnet":
+        #scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5) # set up scheduler     ## scheduler 1
+        lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
+        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
+    elif args.model == "enet":
+        scheduler = lr_scheduler.StepLR(optimizer, 5 , gamma = 0.75)
 
     if args.visualize and args.steps_plot > 0:
         board = Dashboard(args.port)
@@ -232,7 +285,10 @@ def train(args, model, enc=False):
 
             inputs = Variable(images)
             targets = Variable(labels)
-            outputs = model(inputs, only_encode=enc)
+            if args.model == "erfnet":
+                outputs = model(inputs, only_encode=enc)
+            elif args.model == "enet":
+                outputs = model(inputs)
 
             #print("targets", np.unique(targets[:, 0].cpu().data.numpy()))
 
@@ -299,7 +355,10 @@ def train(args, model, enc=False):
 
                 inputs = Variable(images, volatile=True)    #volatile flag makes it free backward or outputs for eval
                 targets = Variable(labels, volatile=True)
-                outputs = model(inputs, only_encode=enc) 
+                if args.model == "erfnet":
+                    outputs = model(inputs, only_encode=enc) 
+                elif args.model == "enet":
+                    outputs = model(inputs)
 
                 loss = criterion(outputs, targets[:, 0])
                 epoch_loss_val.append(loss.item())
@@ -478,7 +537,11 @@ def main(args):
             return model
 
         weights_path = args.loadDir + args.loadWeights
-        model = load_my_state_dict(model, torch.load(weights_path))
+        if args.model == "erfnet":
+            model = load_my_state_dict(model, torch.load(weights_path))
+        elif args.model == "enet":
+            model = load_my_state_dict(model.module, torch.load(weights_path)['state_dict'])
+
 
 
     #train(args, model)

@@ -12,6 +12,25 @@ from transform import Relabel, ToLabel  # Assuming these transforms are defined 
 
 NUM_CLASSES = 20  # Cityscapes has 20 classes
 
+
+class ENetCoTransform(object):
+    def __init__(self, height=512):
+        self.height = height
+        pass
+
+    def __call__(self, input, target):
+        # do something to both images
+        input = Resize(self.height, Image.BILINEAR)(input)
+        target = Resize(self.height, Image.NEAREST)(target)
+
+        input = ToTensor()(input)
+
+        target = ToLabel()(target)
+        target = Relabel(255, 19)(target)
+
+        return input, target
+    
+
 class MyCoTransform(object):
     def __init__(self, enc, augment=True, height=512):
         self.enc = enc
@@ -100,10 +119,43 @@ def calculate_class_weights(class_counts, total_pixels, num_classes):
 
     return class_weights
 
+import torch
+
+def calculate_class_weights_enet(class_counts, total_pixels, num_classes, c=1.02):
+    """
+    Calculate class weights using the custom ENet scheme: w_class = 1 / ln(c + p_class)
+
+    Args:
+        class_counts (dict): Dictionary with class_id as keys and pixel counts as values.
+        total_pixels (int): Total number of pixels in the dataset.
+        num_classes (int): Total number of classes.
+        c (int): Hyperparameter to control weight scaling. Default is 102.
+
+    Returns:
+        torch.Tensor: Tensor of class weights.
+    """
+    class_weights = torch.zeros(num_classes)
+    
+    for class_id in range(num_classes):
+        # Get the pixel count for the class (use 0 if class does not exist)
+        count = class_counts.get(class_id, 0)
+        
+        # Calculate the class probability
+        p_class = count / total_pixels if total_pixels > 0 else 0
+        
+        # Calculate the weight using the custom formula
+        if p_class > 0:
+            class_weights[class_id] = 1 / torch.log(torch.tensor(c + p_class, dtype=torch.float))
+        else:
+            class_weights[class_id] = 0  # Assign zero weight if the class has no pixels
+
+    return class_weights
+
+
 if __name__ == '__main__':
     datadir = "..\\cityscapes"  # Adjust path if needed
-    co_transform = MyCoTransform(False, augment=True, height=512)
-    co_transform_val = MyCoTransform(False, augment=False, height=512)
+    co_transform = ENetCoTransform(height=512)
+    co_transform_val = ENetCoTransform(height=512)
     
     dataset_train = cityscapes(datadir, co_transform, 'train')
     dataset_val = cityscapes(datadir, co_transform_val, 'val')
@@ -114,5 +166,5 @@ if __name__ == '__main__':
     class_counts, total_pixels = calculate_class_histogram(loader)
     print(f"Class Counts: {class_counts}, Total Pixels: {total_pixels}")
 
-    class_weights = calculate_class_weights2(class_counts, total_pixels, NUM_CLASSES)
+    class_weights = calculate_class_weights_enet(class_counts, total_pixels, NUM_CLASSES)
     print(f"Class Weights: {class_weights}")
