@@ -20,6 +20,7 @@ from torchvision.transforms import ToTensor, ToPILImage
 
 from dataset import cityscapes
 from erfnet import ERFNet
+from enet import ENet
 from transform import Relabel, ToLabel, Colorize
 from iouEval import iouEval, getColorEntry
 
@@ -45,7 +46,10 @@ def main(args):
     print ("Loading model: " + modelpath)
     print ("Loading weights: " + weightspath)
 
-    model = ERFNet(NUM_CLASSES)
+    if args.model == "erfnet":
+        model = ERFNet(NUM_CLASSES)
+    elif args.model == "enet":
+        model = ENet(NUM_CLASSES)
 
     #model = torch.nn.DataParallel(model)
     if (not args.cpu):
@@ -63,8 +67,10 @@ def main(args):
             else:
                 own_state[name].copy_(param)
         return model
-
-    model = load_my_state_dict(model, torch.load(weightspath, map_location=lambda storage, loc: storage))
+    if args.model == "enet":
+        model = load_my_state_dict(model.module, torch.load(weightspath))
+    else:
+        model = load_my_state_dict(model, torch.load(weightspath, map_location=lambda storage, loc: storage))
     print ("Model and weights LOADED successfully")
 
 
@@ -76,9 +82,10 @@ def main(args):
 
     loader = DataLoader(cityscapes(args.datadir, input_transform_cityscapes, target_transform_cityscapes, subset=args.subset), num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
-
-    iouEvalVal = iouEval(NUM_CLASSES)
-
+    if args.void:
+        iouEvalVal = iouEval(NUM_CLASSES, ignoreIndex=NUM_CLASSES)
+    else:
+        iouEvalVal = iouEval(NUM_CLASSES)
     start = time.time()
 
     for step, (images, labels, filename, filenameGt) in enumerate(loader):
@@ -132,6 +139,9 @@ def main(args):
     print(iou_classes_str[16], "train")
     print(iou_classes_str[17], "motorcycle")
     print(iou_classes_str[18], "bicycle")
+    if args.void:
+        print(iou_classes_str[19], "void")
+    print
     print("=======================================")
     iouStr = getColorEntry(iouVal)+'{:0.2f}'.format(iouVal*100) + '\033[0m'
     print ("MEAN IoU: ", iouStr, "%")
@@ -140,7 +150,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     parser.add_argument('--state')
-
+    parser.add_argument('--model', default="erfnet") 
     parser.add_argument('--loadDir',default="../trained_models/")
     parser.add_argument('--loadWeights', default="erfnet_pretrained.pth")
     parser.add_argument('--loadModel', default="erfnet.py")
@@ -151,5 +161,6 @@ if __name__ == '__main__':
     parser.add_argument('--metric', default="msp")
     parser.add_argument('--temperature', type=float, default=1)
     parser.add_argument('--cpu', action='store_true')
+    parser.add_argument('--void', action='store_true')
 
     main(parser.parse_args())

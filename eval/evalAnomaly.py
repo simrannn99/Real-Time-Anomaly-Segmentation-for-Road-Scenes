@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-import cv2
 import glob
 import torch
 import random
 from PIL import Image
 import numpy as np
 from erfnet import ERFNet
+from enet import ENet
 import os.path as osp
 from argparse import ArgumentParser
 from ood_metrics import fpr_at_95_tpr, calc_metrics, plot_roc, plot_pr,plot_barcode
@@ -35,15 +35,18 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = True
 
 
-def initialize_model(model_path, weights_path, use_cpu):
-    print ("Loading model: " + model_path)
+def initialize_model(weights_path, use_cpu, model_name):
+    print ("Loading model: " + model_name)
     print ("Loading weights: " + weights_path)
 
-    net = ERFNet(NUM_CLASSES)
+    if model_name == "erfnet":
+        model = ERFNet(NUM_CLASSES)
+    elif model_name == "enet":
+        model = ENet(NUM_CLASSES)
 
     if (not use_cpu):
-        model = torch.nn.DataParallel(net).cuda()
-    def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements
+        model = torch.nn.DataParallel(model).cuda()
+    def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements   
         own_state = model.state_dict()
         for name, param in state_dict.items():
             if name not in own_state:
@@ -55,8 +58,10 @@ def initialize_model(model_path, weights_path, use_cpu):
             else:
                 own_state[name].copy_(param)
         return model
-
-    model = load_my_state_dict(model, torch.load(weights_path, map_location=lambda storage, loc: storage))
+    if model_name == "enet":
+        model = load_my_state_dict(model.module, torch.load(weights_path))
+    else:
+        model = load_my_state_dict(model, torch.load(weights_path, map_location=lambda storage, loc: storage))
     print ("Model and weights LOADED successfully")
     return model
     
@@ -99,6 +104,8 @@ def evaluate_model(model, input_paths, args):
     for path in input_paths:
         print(path) 
         images = preprocess_image(path, input_transform)
+        if not args.cpu:
+            images = images.cuda()
         with torch.no_grad():
             result = model(images).squeeze(0)  
         if args.classifier == "void":
@@ -166,6 +173,7 @@ class ConsoleColors:
     YELLOW = '\033[33;1m'
     PURPLE = '\033[35;1m'
     BLUE = '\033[34;1m'
+    RED = '\033[31;1m'
     RESET = '\033[0m'
 
 def main():
@@ -176,10 +184,10 @@ def main():
         nargs="+",
         help="A list of space separated input images; "
         "or a single glob pattern such as 'directory/*.jpg'",
-    )  
+    ) 
+    parser.add_argument('--model', default="erfnet") 
     parser.add_argument('--loadDir',default="../trained_models/")
     parser.add_argument('--loadWeights', default="erfnet_pretrained.pth")
-    parser.add_argument('--loadModel', default="erfnet.py")
     parser.add_argument('--subset', default="val")  #can be val or train (must have labels)
     parser.add_argument('--datadir', default="/home/shyam/ViT-Adapter/segmentation/data/cityscapes/")
     parser.add_argument('--num-workers', type=int, default=4)
@@ -191,9 +199,8 @@ def main():
     args = parser.parse_args()
 
     # Load the model
-    modelpath = args.loadDir + args.loadModel
     weightspath = args.loadDir + args.loadWeights
-    model = initialize_model(modelpath, weightspath, args.cpu)
+    model = initialize_model(weightspath, args.cpu, args.model)
 
     model.eval()
     
@@ -213,9 +220,11 @@ def main():
     file.write( "\n\n")
     # Log the results
     dataset_name = extract_dataset_name(input_paths[0])
+    print(f'{ConsoleColors.RED}Model: {ConsoleColors.RESET}{args.model.upper()}')
     print(f'{ConsoleColors.YELLOW}Dataset name: {ConsoleColors.RESET}{dataset_name}')
     print(f'{ConsoleColors.PURPLE}Metric: {ConsoleColors.RESET}{args.metric}')
-    file.write('Weights loaded: ' + args.loadWeights )
+    file.write('Weights: '+ args.loadDir + args.loadWeights)
+    file.write('\nModel: ' + args.model.upper() )
     file.write('\nDataset name: '+dataset_name)
     file.write('\n\tMetric: '+args.metric)
     if args.metric == "msp":
