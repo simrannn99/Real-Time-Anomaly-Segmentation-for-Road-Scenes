@@ -525,6 +525,7 @@ def main(args):
     if args.pretrained:
         def load_my_state_dict(model, state_dict):  # custom function to load model when not all dict elements
             own_state = model.state_dict()
+            #print(own_state)
             for name, param in state_dict.items():
                 if name not in own_state:
                     if name.startswith('module.'):
@@ -540,7 +541,7 @@ def main(args):
         if args.model == "erfnet":
             model = load_my_state_dict(model, torch.load(weights_path))
         elif args.model == "enet":
-            model = load_my_state_dict(model.module, torch.load(weights_path)['state_dict'])
+            model = load_my_state_dict(model.module, torch.load(weights_path))
 
 
 
@@ -551,7 +552,7 @@ def main(args):
     #CAREFUL: for some reason, after training encoder alone, the decoder gets weights=0. 
     #We must reinit decoder weights or reload network passing only encoder in order to train decoder
     print("========== DECODER TRAINING ===========")
-    if (not args.state):
+    if (not args.pretrained and args.model == "erfnet"):
         if args.pretrainedEncoder:
             print("Loading encoder pretrained in imagenet")
             from erfnet_imagenet import ERFNet as ERFNet_imagenet
