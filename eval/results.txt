@@ -59,3 +59,93 @@ Model: ENET
 Dataset name: RoadObsticle21
 	Metric: msp Temperature: 1
 	AUPRC score: 0.5602499953221419   FPR@TPR95: 91.56462393513426
+
+Weights: ../save/enet_finetuned1/model_best.pth
+Model: ENET
+Dataset name: RoadObsticle21
+	Metric: msp Temperature: 1
+	AUPRC score: 0.36673963153448697   FPR@TPR95: 99.67789053909034
+
+Weights: ../save/enet_finetuned1/model_best.pth
+Model: ENET
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 3.1273238284983798   FPR@TPR95: 96.58611856057006
+
+Weights: ../save/enet_finetuned1/model_best.pth
+Model: ENET
+Dataset name: FS_LostFound_full
+	Metric: msp Temperature: 1
+	AUPRC score: 1.0267293199017185   FPR@TPR95: 82.34005775924543
+
+Weights: ../save/enet_finetuned1/model_best.pth
+Model: ENET
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 10.590287424078552   FPR@TPR95: 98.71035697079672
+
+Weights: ../save/enet_finetuned1/model_best.pth
+Model: ENET
+Dataset name: RoadAnomaly
+	Metric: msp Temperature: 1
+	AUPRC score: 6.913016399474634   FPR@TPR95: 97.74982453507437
+
+Weights: ../save/enet_finetuned2/model_best.pth
+Model: ENET
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 13.313813723435382   FPR@TPR95: 89.71509742198968
+
+Weights: ../save/enet_finetuned2/model_best.pth
+Model: ENET
+Dataset name: RoadAnomaly
+	Metric: msp Temperature: 1
+	AUPRC score: 12.992114422233147   FPR@TPR95: 84.2315010037045
+
+Weights: ../save/enet_finetuned2/model_best.pth
+Model: ENET
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 4.08100597166301   FPR@TPR95: 97.88721541123299
+
+Weights: ../save/enet_finetuned2/model_best.pth
+Model: ENET
+Dataset name: FS_LostFound_full
+	Metric: msp Temperature: 1
+	AUPRC score: 2.222024618165766   FPR@TPR95: 61.28132660664362
+
+Weights: ../save/enet_finetuned2/model_best.pth
+Model: ENET
+Dataset name: RoadObsticle21
+	Metric: msp Temperature: 1
+	AUPRC score: 0.5926619651620885   FPR@TPR95: 99.49892933796156
+
+Weights: ../save/erfnet_finetuned1_30/model_best.pth
+Model: ERFNET
+Dataset name: RoadObsticle21
+	Metric: msp Temperature: 1
+	AUPRC score: 1.0060450041038185   FPR@TPR95: 94.8921844155328
+
+Weights: ../save/erfnet_finetuned1_30/model_best.pth
+Model: ERFNET
+Dataset name: FS_LostFound_full
+	Metric: msp Temperature: 1
+	AUPRC score: 8.454763537100582   FPR@TPR95: 31.801219062118236
+
+Weights: ../save/erfnet_finetuned1_30/model_best.pth
+Model: ERFNET
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 9.464850216977146   FPR@TPR95: 43.628568234009066
+
+Weights: ../save/erfnet_finetuned1_30/model_best.pth
+Model: ERFNET
+Dataset name: RoadAnomaly
+	Metric: msp Temperature: 1
+	AUPRC score: 10.989914072791453   FPR@TPR95: 79.98869774558601
+
+Weights: ../save/erfnet_finetuned1_30/model_best.pth
+Model: ERFNET
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 20.31365947885736   FPR@TPR95: 81.11993594348479
