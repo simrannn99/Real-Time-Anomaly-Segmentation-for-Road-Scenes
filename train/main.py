@@ -17,7 +17,8 @@ from argparse import ArgumentParser
 from torch.optim import SGD, Adam, lr_scheduler
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, CenterCrop, Normalize, Resize, Pad
+from torchvision.transforms import Compose, CenterCrop, Normalize, Resize, Pad, RandomCrop
+import torchvision.transforms.functional as TF
 from torchvision.transforms import ToTensor, ToPILImage
 
 from dataset import VOC12,cityscapes
@@ -90,6 +91,53 @@ class ENetCoTransform(object):
         target = Relabel(255, 19)(target)
 
         return input, target
+
+
+class BiSeNetCoTransform(object):
+    def __init__(self, height=512, width=1024, scales=(0.75, 1, 1.25, 1.5, 1.75, 2.0), augment=True):
+        self.height = height
+        self.width = width
+        self.scales = scales
+        self.augment = augment
+
+    def random_scaling(self, input, target):
+        scale_factor = random.choice(self.scales)
+        new_size = (int(input.size[1] * scale_factor), int(input.size[0] * scale_factor))  # (height, width)
+        input = Resize(new_size, Image.BILINEAR)(input)
+        target = Resize(new_size, Image.NEAREST)(target)
+        return input, target
+
+    def random_cropping(self, input, target):
+        i, j, h, w = RandomCrop.get_params(input, output_size=(self.height, self.width))
+        input = TF.crop(input, i, j, h, w)
+        target = TF.crop(target, i, j, h, w)
+        return input, target
+
+    def __call__(self, input, target):
+        # Apply augmentations if enabled
+        if self.augment:
+            # Random horizontal flip
+            if random.random() > 0.5:
+                input = TF.hflip(input)
+                target = TF.hflip(target)
+
+            # Apply random scaling
+            input, target = self.random_scaling(input, target)
+        
+        # Apply random cropping
+        input, target = self.random_cropping(input, target)
+        
+        # Resize to the fixed resolution
+        input = Resize((self.height, self.width), Image.BILINEAR)(input)
+        target = Resize((self.height, self.width), Image.NEAREST)(target)
+        
+        input = ToTensor()(input)
+        target = ToLabel()(target)
+        target = Relabel(255, 19)(target)
+        
+        return input, target
+
+
     
 class CrossEntropyLoss2d(torch.nn.Module):
 
@@ -174,6 +222,28 @@ def train(args, model, enc=False):
         weight[18] = 42.76317799
         weight[19] = 7.8450451 # Weight for class 19
 
+    elif args.model == "bisenet":
+        weight[0] = 3.36366406
+        weight[1] = 14.04234086
+        weight[2] = 4.9948856
+        weight[3] = 39.25997007
+        weight[4] = 36.5152765
+        weight[5] = 32.90667927
+        weight[6] = 46.27742179
+        weight[7] = 40.67459427
+        weight[8] = 6.71150498
+        weight[9] = 33.5627786
+        weight[10] = 18.54488148
+        weight[11] = 32.99978951
+        weight[12] = 47.68372067
+        weight[13] = 12.70290829
+        weight[14] = 45.20793195
+        weight[15] = 45.7834263
+        weight[16] = 45.82760469
+        weight[17] = 48.40837536
+        weight[18] = 42.76317799
+        weight[19] = 7.8450451 # Weight for class 19
+
     assert os.path.exists(args.datadir), "Error: datadir (dataset directory) could not be loaded"
 
     if args.model == "erfnet":   
@@ -182,6 +252,9 @@ def train(args, model, enc=False):
     elif args.model == "enet":
         co_transform = ENetCoTransform(height=args.height)
         co_transform_val = ENetCoTransform(height=args.height)
+    elif args.model == "bisenet":
+        co_transform = BiSeNetCoTransform(height=args.height)
+        co_transform_val = BiSeNetCoTransform(height=args.height)
     dataset_train = cityscapes(args.datadir, co_transform, 'train')
     dataset_val = cityscapes(args.datadir, co_transform_val, 'val')
 
@@ -224,6 +297,11 @@ def train(args, model, enc=False):
             optimizer = Adam(model.parameters(), 5e-5, weight_decay=2e-4) 
         else:
             optimizer = Adam(model.parameters(), 5e-4, weight_decay=2e-4)      ## scheduler 2
+    elif args.model == "bisenet":
+        if args.pretrained:
+            optimizer = SGD(model.parameters(), 5e-3,momentum=0.9,  weight_decay=5e-4) 
+        else:
+            optimizer = SGD(model.parameters(), 5e-2, momentum=0.9, weight_decay=5e-4) 
 
     start_epoch = 1
     if args.resume:
@@ -247,6 +325,9 @@ def train(args, model, enc=False):
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
     elif args.model == "enet":
         scheduler = lr_scheduler.StepLR(optimizer, 5 , gamma = 0.75)
+    elif args.model == "bisenet":
+        lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
+        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
 
     if args.visualize and args.steps_plot > 0:
         board = Dashboard(args.port)
@@ -287,7 +368,7 @@ def train(args, model, enc=False):
             targets = Variable(labels)
             if args.model == "erfnet":
                 outputs = model(inputs, only_encode=enc)
-            elif args.model == "enet":
+            elif args.model == "enet" or args.model == "bisenet":
                 outputs = model(inputs)
 
             #print("targets", np.unique(targets[:, 0].cpu().data.numpy()))
@@ -357,7 +438,7 @@ def train(args, model, enc=False):
                 targets = Variable(labels, volatile=True)
                 if args.model == "erfnet":
                     outputs = model(inputs, only_encode=enc) 
-                elif args.model == "enet":
+                elif args.model == "enet" or args.model=="bisenet":
                     outputs = model(inputs)
 
                 loss = criterion(outputs, targets[:, 0])
@@ -540,7 +621,7 @@ def main(args):
         weights_path = args.loadDir + args.loadWeights
         if args.model == "erfnet":
             model = load_my_state_dict(model, torch.load(weights_path))
-        elif args.model == "enet":
+        elif args.model == "enet" or args.model == "bisenet":
             model = load_my_state_dict(model.module, torch.load(weights_path))
 
 
