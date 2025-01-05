@@ -214,5 +214,5 @@ if __name__ == '__main__':
     class_counts, total_pixels = calculate_class_histogram(loader)
     print(f"Class Counts: {class_counts}, Total Pixels: {total_pixels}")
 
-    class_weights = calculate_class_weights2(class_counts, total_pixels, NUM_CLASSES)
+    class_weights = calculate_class_weights(class_counts, total_pixels, NUM_CLASSES)
     print(f"Class Weights: {class_weights}")

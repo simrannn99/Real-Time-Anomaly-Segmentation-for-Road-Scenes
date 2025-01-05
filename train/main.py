@@ -223,26 +223,27 @@ def train(args, model, enc=False):
         weight[19] = 7.8450451 # Weight for class 19
 
     elif args.model == "bisenet":
-        weight[0] = 2.8149201869965	
-        weight[1] = 6.9850029945374	
-        weight[2] = 3.7890393733978	
-        weight[3] = 9.9428062438965	
-        weight[4] = 9.7702074050903	
-        weight[5] = 9.5110931396484	
-        weight[6] = 10.311357498169	
-        weight[7] = 10.026463508606	
-        weight[8] = 4.6323022842407	
-        weight[9] = 9.5608062744141	
-        weight[10] = 7.8698215484619	
-        weight[11] = 9.5168733596802	
-        weight[12] = 10.373730659485	
-        weight[13] = 6.6616044044495	
-        weight[14] = 10.260489463806	
-        weight[15] = 10.287888526917	
-        weight[16] = 10.289801597595	
-        weight[17] = 10.405355453491	
-        weight[18] = 10.138095855713
-        weight[19] = 1 # Weight for class 19
+        weight[0] = 0.0007
+        weight[1] = 0.0050
+        weight[2] = 0.0015
+        weight[3] = 0.0436
+        weight[4] = 0.0306
+        weight[5] = 0.0210
+        weight[6] = 0.1510
+        weight[7] = 0.0518
+        weight[8] = 0.0019
+        weight[9] = 0.0228
+        weight[10] = 0.0109
+        weight[11] = 0.0173
+        weight[12] = 0.1255
+        weight[13] = 0.0033
+        weight[14] = 0.0754
+        weight[15] = 0.0987
+        weight[16] = 0.0807
+        weight[17] = 0.2011
+        weight[18] = 0.0529
+        weight[19] = 0.0043
+
 
     assert os.path.exists(args.datadir), "Error: datadir (dataset directory) could not be loaded"
 
