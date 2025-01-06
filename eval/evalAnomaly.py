@@ -7,6 +7,7 @@ from PIL import Image
 import numpy as np
 from erfnet import ERFNet
 from enet import ENet
+from bisenet import BiSeNet
 import os.path as osp
 from argparse import ArgumentParser
 from ood_metrics import fpr_at_95_tpr, calc_metrics, plot_roc, plot_pr,plot_barcode
@@ -43,6 +44,8 @@ def initialize_model(weights_path, use_cpu, model_name):
         model = ERFNet(NUM_CLASSES)
     elif model_name == "enet":
         model = ENet(NUM_CLASSES)
+    elif model_name == "bisenet":
+        model = BiSeNet(NUM_CLASSES)
 
     if (not use_cpu):
         model = torch.nn.DataParallel(model).cuda()
@@ -58,7 +61,7 @@ def initialize_model(weights_path, use_cpu, model_name):
             else:
                 own_state[name].copy_(param)
         return model
-    if model_name == "enet":
+    if model_name == "enet" or model_name == "bisenet":
         model = load_my_state_dict(model.module, torch.load(weights_path))
     else:
         model = load_my_state_dict(model, torch.load(weights_path, map_location=lambda storage, loc: storage))

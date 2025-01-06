@@ -149,3 +149,9 @@ Model: ERFNET
 Dataset name: RoadAnomaly21
 	Metric: msp Temperature: 1
 	AUPRC score: 20.31365947885736   FPR@TPR95: 81.11993594348479
+
+Weights: ../save/bisenet_finetuned/model_best.pth
+Model: BISENET
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 2.5888782483356927   FPR@TPR95: 87.01817523343468
