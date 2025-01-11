@@ -269,3 +269,33 @@ Model: BISENET
 Dataset name: FS_LostFound_full
 	Metric: msp Temperature: 1
 	AUPRC score: 0.8782880269166196   FPR@TPR95: 65.93942265355618
+
+Weights: ../save/bisenet_finetuned5/model_best.pth
+Model: BISENET
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 12.49247089591951   FPR@TPR95: 89.23195969189966
+
+Weights: ../save/bisenet_finetuned5/model_best.pth
+Model: BISENET
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 6.380256222886105   FPR@TPR95: 74.1381629459922
+
+Weights: ../save/bisenet_finetuned5/model_best.pth
+Model: BISENET
+Dataset name: FS_LostFound_full
+	Metric: msp Temperature: 1
+	AUPRC score: 11.650762809743192   FPR@TPR95: 35.13706375130764
+
+Weights: ../save/bisenet_finetuned5/model_best.pth
+Model: BISENET
+Dataset name: RoadAnomaly
+	Metric: msp Temperature: 1
+	AUPRC score: 8.456844468750715   FPR@TPR95: 92.91334684394454
+
+Weights: ../save/bisenet_finetuned5/model_best.pth
+Model: BISENET
+Dataset name: RoadObsticle21
+	Metric: msp Temperature: 1
+	AUPRC score: 1.838657618365265   FPR@TPR95: 99.87076289431498
