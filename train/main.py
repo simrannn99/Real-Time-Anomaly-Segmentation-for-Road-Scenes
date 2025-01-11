@@ -223,26 +223,26 @@ def train(args, model, enc=False):
         weight[19] = 7.8450451 # Weight for class 19
 
     elif args.model == "bisenet":
-        weight[0] = 0.0251
-        weight[1] = 0.1899
-        weight[2] = 0.0564
-        weight[3] = 1.5179
-        weight[4] = 1.2112
-        weight[5] = 0.8115
-        weight[6] = 5.8376
-        weight[7] = 1.8618
-        weight[8] = 0.0751
-        weight[9] = 0.8515
-        weight[10] = 0.4637
-        weight[11] = 0.6124
-        weight[12] = 5.1401
-        weight[13] = 0.1270
-        weight[14] = 3.2074
-        weight[15] = 3.1356
-        weight[16] = 3.4839
-        weight[17] = 9.0858
-        weight[18] = 2.1191
-        weight[19] = 0.1625
+        weight[0] = 2.8149201869965	
+        weight[1] = 6.9850029945374	
+        weight[2] = 3.7890393733978	
+        weight[3] = 9.9428062438965	
+        weight[4] = 9.7702074050903	
+        weight[5] = 9.5110931396484	
+        weight[6] = 10.311357498169	
+        weight[7] = 10.026463508606	
+        weight[8] = 4.6323022842407	
+        weight[9] = 9.5608062744141	
+        weight[10] = 7.8698215484619	
+        weight[11] = 9.5168733596802	
+        weight[12] = 10.373730659485	
+        weight[13] = 6.6616044044495	
+        weight[14] = 10.260489463806	
+        weight[15] = 10.287888526917	
+        weight[16] = 10.289801597595	
+        weight[17] = 10.405355453491	
+        weight[18] = 10.138095855713
+        weight[19] = 1
 
 
 
