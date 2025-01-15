@@ -326,7 +326,7 @@ def train(args, model, enc=False):
         lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
     elif args.model == "enet":
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.8)
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     elif args.model == "bisenet":
         lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
