@@ -32,6 +32,8 @@ from shutil import copyfile
 
 from calculate_class_weights import calculate_class_weights, calculate_class_weights2, calculate_class_histogram
 
+from logit_norm_loss import LogitNormLoss
+
 NUM_CHANNELS = 3
 NUM_CLASSES = 20 #pascal=22, cityscapes=20
 
@@ -267,6 +269,9 @@ def train(args, model, enc=False):
         weight = weight.cuda()
         print(weight)
     criterion = CrossEntropyLoss2d(weight)
+    if args.model == "erfnet":
+        if args.logit_norm:
+            criterion = LogitNormLoss(loss_func=criterion)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
@@ -677,6 +682,9 @@ if __name__ == '__main__':
     parser.add_argument('--iouVal', action='store_true', default=True)  
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
 
+    parser.add_argument('--loss', default="cross_entropy")
+    parser.add_argument('--logit-norm', action='store_true', default=False)
+    
     parser.add_argument('--pretrained', action='store_true')
     parser.add_argument('--loadDir',default="../trained_models/")
     parser.add_argument('--loadWeights', default="erfnet_pretrained.pth")
