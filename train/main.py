@@ -33,6 +33,7 @@ from shutil import copyfile
 from calculate_class_weights import calculate_class_weights, calculate_class_weights2, calculate_class_histogram
 
 from logit_norm_loss import LogitNormLoss
+from focal_loss import FocalLoss
 
 NUM_CHANNELS = 3
 NUM_CLASSES = 20 #pascal=22, cityscapes=20
@@ -268,10 +269,16 @@ def train(args, model, enc=False):
     if args.cuda:
         weight = weight.cuda()
         print(weight)
-    criterion = CrossEntropyLoss2d(weight)
+    
     if args.model == "erfnet":
+        if args.loss == "cross_entropy":
+            criterion = CrossEntropyLoss2d(weight)
+        elif args.loss == "focal_loss":
+            criterion = FocalLoss(gamma=2, alpha=1)
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
+    else:
+        criterion = CrossEntropyLoss2d(weight)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
@@ -682,7 +689,7 @@ if __name__ == '__main__':
     parser.add_argument('--iouVal', action='store_true', default=True)  
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
 
-    parser.add_argument('--loss', default="cross_entropy")
+    parser.add_argument('--loss', default="cross_entropy") # [ "cross_entropy", "focal_loss"]
     parser.add_argument('--logit-norm', action='store_true', default=False)
     
     parser.add_argument('--pretrained', action='store_true')
