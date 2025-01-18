@@ -274,7 +274,7 @@ def train(args, model, enc=False):
         if args.loss == "cross_entropy":
             criterion = CrossEntropyLoss2d(weight)
         elif args.loss == "focal_loss":
-            criterion = FocalLoss(gamma=2, alpha=1)
+            criterion = FocalLoss(gamma=2, alpha= [1] * 20)
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
     else:
