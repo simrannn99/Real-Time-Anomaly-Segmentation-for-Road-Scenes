@@ -633,7 +633,11 @@ def main(args):
                         print(name, ' not loaded')
                         continue
                 else:
-                    own_state[name].copy_(param)
+                    if "output_conv" in name:
+                        new_param = torch.zeros_like(own_state[name])  # Initialize with zeros
+                        own_state[name].copy_(new_param)  # Copy adjusted parameter
+                    else:
+                        own_state[name].copy_(param)  # Copy matching layers directly
             return model
 
         weights_path = args.loadDir + args.loadWeights
