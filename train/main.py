@@ -633,7 +633,7 @@ def main(args):
                         print(name, ' not loaded')
                         continue
                 else:
-                    if "output_conv" in name:
+                    if "conv_out.conv_out" in name:
                         new_param = torch.zeros_like(own_state[name])  # Initialize with zeros
                         own_state[name].copy_(new_param)  # Copy adjusted parameter
                     else:
