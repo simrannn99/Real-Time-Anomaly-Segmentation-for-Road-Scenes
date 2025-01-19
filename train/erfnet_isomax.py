@@ -86,7 +86,7 @@ class Encoder(nn.Module):
 
         # Only in encoder mode:
 
-        self.output_conv = IsoMaxPlusLossFirstPart(num_classes, encoder=True)
+        self.output_conv = IsoMaxPlusLossFirstPart(num_classes, num_classes)
 
     def forward(self, input, predict=False):
         output = self.initial_block(input)
@@ -126,7 +126,7 @@ class Decoder(nn.Module):
         self.layers.append(non_bottleneck_1d(16, 0, 1))
         self.layers.append(non_bottleneck_1d(16, 0, 1))
 
-        self.output_conv = IsoMaxPlusLossFirstPart(num_classes, encoder=False)
+        self.output_conv = IsoMaxPlusLossFirstPart(num_classes, num_classes)
 
     def forward(self, input):
         output = input
