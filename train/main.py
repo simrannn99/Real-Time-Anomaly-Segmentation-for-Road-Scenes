@@ -622,9 +622,29 @@ def main(args):
     """
 
     if args.pretrained:
+        def load_my_state_dict_isomax(model, state_dict):  # custom function to load model when not all dict elements
+            own_state = model.state_dict()
+            for name, param in state_dict.items():
+                if name not in own_state:
+                    if name.startswith("module."):
+                        stripped_name = name.split("module.")[-1]
+                        if stripped_name not in own_state:
+                            print(f"Skipping {name} as {stripped_name}...")
+                            continue
+                        own_state[stripped_name].copy_(param)
+                    else:
+                        print(f"Skipping {name}...")
+                        continue
+                else:
+                    if "output_conv.output_conv" in name:
+                        new_param = torch.zeros_like(own_state[name])
+                        own_state[name].copy_(new_param)
+                    else:
+                        own_state[name].copy_(param)
+            return model
+        
         def load_my_state_dict(model, state_dict):  # custom function to load model when not all dict elements
             own_state = model.state_dict()
-            #print(own_state)
             for name, param in state_dict.items():
                 if name not in own_state:
                     if name.startswith('module.'):
@@ -633,16 +653,15 @@ def main(args):
                         print(name, ' not loaded')
                         continue
                 else:
-                    if "conv_out.conv_out" in name:
-                        new_param = torch.zeros_like(own_state[name])  # Initialize with zeros
-                        own_state[name].copy_(new_param)  # Copy adjusted parameter
-                    else:
-                        own_state[name].copy_(param)  # Copy matching layers directly
+                    own_state[name].copy_(param)
             return model
 
         weights_path = args.loadDir + args.loadWeights
-        if args.model == "erfnet" or args.model == "erfnet_isomax":
+
+        if args.model == "erfnet":
             model = load_my_state_dict(model, torch.load(weights_path))
+        elif model == "erfnet_isomax":
+            model = load_my_state_dict_isomax(model, torch.load(weights_path))
         elif args.model == "enet" or args.model == "bisenet":
             model = load_my_state_dict(model.module, torch.load(weights_path))
 
