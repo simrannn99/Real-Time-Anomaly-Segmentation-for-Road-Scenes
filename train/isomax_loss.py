@@ -35,3 +35,30 @@ class IsoMaxPlusLossFirstPart(nn.Module):
         logits = -distances  # Negative distances as logits
         logits = logits.view(B, H, W, self.num_classes).permute(0, 3, 1, 2)  # Reshape to B x num_classes x H x W
         return logits / self.temperature
+    
+class IsoMaxPlusLossSecondPart(nn.Module):
+    """This part replaces the nn.CrossEntropyLoss()"""
+    def __init__(self, entropic_scale=10.0):
+        super(IsoMaxPlusLossSecondPart, self).__init__()
+        self.entropic_scale = entropic_scale
+
+    def forward(self, logits, targets, debug=False):
+        #############################################################################
+        #############################################################################
+        """Probabilities and logarithms are calculated separately and sequentially"""
+        """Therefore, nn.CrossEntropyLoss() must not be used to calculate the loss"""
+        #############################################################################
+        #############################################################################
+        distances = -logits
+        probabilities_for_training = nn.Softmax(dim=1)(-self.entropic_scale * distances)
+        probabilities_at_targets = probabilities_for_training[range(distances.size(0)), targets]
+        loss = -torch.log(probabilities_at_targets).mean()
+        if not debug:
+            return loss
+        else:
+            targets_one_hot = torch.eye(distances.size(1))[targets].long().cuda()
+            intra_inter_distances = torch.where(targets_one_hot != 0, distances, torch.Tensor([float('Inf')]).cuda())
+            inter_intra_distances = torch.where(targets_one_hot != 0, torch.Tensor([float('Inf')]).cuda(), distances)
+            intra_distances = intra_inter_distances[intra_inter_distances != float('Inf')]
+            inter_distances = inter_intra_distances[inter_intra_distances != float('Inf')]
+            return loss, 1.0, intra_distances, inter_distances

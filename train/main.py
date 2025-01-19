@@ -22,6 +22,7 @@ import torchvision.transforms.functional as TF
 from torchvision.transforms import ToTensor, ToPILImage
 
 from dataset import VOC12,cityscapes
+from train.isomax_loss import IsoMaxPlusLossSecondPart
 from transform import Relabel, ToLabel, Colorize
 from visualize import Dashboard
 
@@ -270,13 +271,18 @@ def train(args, model, enc=False):
         weight = weight.cuda()
         print(weight)
     
-    if args.model == "erfnet" or args.model == "erfnet_isomax":
+    if args.model == "erfnet":
         if args.loss == "cross_entropy":
             criterion = CrossEntropyLoss2d(weight)
         elif args.loss == "focal_loss":
             criterion = FocalLoss(gamma=2, alpha= [1] * 20)
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
+    elif args.model == "erfnet_isomaxplus":
+        if args.loss == "cross_entropy":
+            criterion = IsoMaxPlusLossSecondPart(args.entropicScale)
+        elif args.loss == "focal_loss":
+            criterion = FocalLoss(gamma=2, alpha= [1] * 20)
     else:
         criterion = CrossEntropyLoss2d(weight)
     print(type(criterion))
@@ -382,8 +388,8 @@ def train(args, model, enc=False):
             targets = Variable(labels)
             if args.model == "erfnet" or args.model == "erfnet_isomax":
                 outputs = model(inputs, only_encode=enc)
-                scale = args.entropic_scale if args.model == 'erfnet_isomax' else 1
-                outputs *= scale
+                #scale = args.entropicScale if args.model == 'erfnet_isomax' else 1
+                #outputs *= scale
             elif args.model == "enet" or args.model == "bisenet":
                 outputs = model(inputs)
 
@@ -454,8 +460,8 @@ def train(args, model, enc=False):
                 targets = Variable(labels, volatile=True)
                 if args.model == "erfnet" or args.model == "erfnet_isomax":
                     outputs = model(inputs, only_encode=enc)
-                    scale = args.entropic_scale if args.model == 'erfnet_isomax' else 1
-                    outputs *= scale
+                    #scale = args.entropicScale if args.model == 'erfnet_isomax' else 1
+                    #outputs *= scale
                 elif args.model == "enet" or args.model=="bisenet":
                     outputs = model(inputs)
 
@@ -718,7 +724,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--loss', default="cross_entropy") # [ "cross_entropy", "focal_loss"]
     parser.add_argument('--logit-norm', action='store_true', default=False)
-    parser.add_argument('--entropic-scale', type=float, default=10.0)
+    parser.add_argument('--entropicScale', type=float, default=10.0)
     
     parser.add_argument('--pretrained', action='store_true')
     parser.add_argument('--loadDir',default="../trained_models/")
