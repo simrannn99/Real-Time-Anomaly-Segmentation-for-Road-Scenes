@@ -695,6 +695,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--loss', default="cross_entropy") # [ "cross_entropy", "focal_loss"]
     parser.add_argument('--logit-norm', action='store_true', default=False)
+    parser.add_argument('--entropic-scale', type=float, default=10.0)
     
     parser.add_argument('--pretrained', action='store_true')
     parser.add_argument('--loadDir',default="../trained_models/")
