@@ -159,7 +159,7 @@ def train(args, model, enc=False):
     #create a loder to run all images and calculate histogram of labels, then create weight array using class balancing
 
     weight = torch.ones(NUM_CLASSES)
-    if args.model == "erfnet":
+    if args.model == "erfnet" or args.model == "erfnet_isomax":
         if (enc):
             weight[0] = 2.3653597831726	
             weight[1] = 4.4237880706787	
@@ -251,7 +251,7 @@ def train(args, model, enc=False):
 
     assert os.path.exists(args.datadir), "Error: datadir (dataset directory) could not be loaded"
 
-    if args.model == "erfnet":   
+    if args.model == "erfnet" or args.model == "erfnet_isomax":   
         co_transform = MyCoTransform(enc, augment=True, height=args.height)#1024)
         co_transform_val = MyCoTransform(enc, augment=False, height=args.height)#1024)
     elif args.model == "enet":
@@ -270,7 +270,7 @@ def train(args, model, enc=False):
         weight = weight.cuda()
         print(weight)
     
-    if args.model == "erfnet":
+    if args.model == "erfnet" or args.model == "erfnet_isomax":
         if args.loss == "cross_entropy":
             criterion = CrossEntropyLoss2d(weight)
         elif args.loss == "focal_loss":
@@ -301,7 +301,7 @@ def train(args, model, enc=False):
     #TODO: reduce memory in first gpu: https://discuss.pytorch.org/t/multi-gpu-training-memory-usage-in-balance/4163/4        #https://github.com/pytorch/pytorch/issues/1893
 
     #optimizer = Adam(model.parameters(), 5e-4, (0.9, 0.999),  eps=1e-08, weight_decay=2e-4)     ## scheduler 1
-    if args.model == "erfnet":
+    if args.model == "erfnet" or args.model == "erfnet_isomax":
         if args.pretrained:
             optimizer = Adam(model.parameters(), 5e-5, (0.9, 0.999),  eps=1e-08, weight_decay=1e-4) 
         else:
@@ -333,7 +333,7 @@ def train(args, model, enc=False):
         best_acc = checkpoint['best_acc']
         print("=> Loaded checkpoint at epoch {})".format(checkpoint['epoch']))
 
-    if args.model == "erfnet":
+    if args.model == "erfnet" or args.model == "erfnet_isomax":
         #scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5) # set up scheduler     ## scheduler 1
         lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
         scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)
@@ -380,8 +380,10 @@ def train(args, model, enc=False):
 
             inputs = Variable(images)
             targets = Variable(labels)
-            if args.model == "erfnet":
+            if args.model == "erfnet" or args.model == "erfnet_isomax":
                 outputs = model(inputs, only_encode=enc)
+                scale = args.entropic_scale if args.model == 'erfnet_isomax' else 1
+                outputs *= scale
             elif args.model == "enet" or args.model == "bisenet":
                 outputs = model(inputs)
 
@@ -450,8 +452,10 @@ def train(args, model, enc=False):
 
                 inputs = Variable(images, volatile=True)    #volatile flag makes it free backward or outputs for eval
                 targets = Variable(labels, volatile=True)
-                if args.model == "erfnet":
-                    outputs = model(inputs, only_encode=enc) 
+                if args.model == "erfnet" or args.model == "erfnet_isomax":
+                    outputs = model(inputs, only_encode=enc)
+                    scale = args.entropic_scale if args.model == 'erfnet_isomax' else 1
+                    outputs *= scale
                 elif args.model == "enet" or args.model=="bisenet":
                     outputs = model(inputs)
 
@@ -633,7 +637,7 @@ def main(args):
             return model
 
         weights_path = args.loadDir + args.loadWeights
-        if args.model == "erfnet":
+        if args.model == "erfnet" or args.model == "erfnet_isomax":
             model = load_my_state_dict(model, torch.load(weights_path))
         elif args.model == "enet" or args.model == "bisenet":
             model = load_my_state_dict(model.module, torch.load(weights_path))
