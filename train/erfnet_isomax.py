@@ -126,7 +126,8 @@ class Decoder(nn.Module):
         self.layers.append(non_bottleneck_1d(16, 0, 1))
         self.layers.append(non_bottleneck_1d(16, 0, 1))
 
-        self.output_conv = IsoMaxPlusLossFirstPart(num_classes, num_classes)
+        self.output_conv = nn.ConvTranspose2d(16, num_classes, 2, stride=2, padding=0, output_padding=0, bias=True)
+        self.loss = IsoMaxPlusLossFirstPart(num_classes, num_classes)
 
     def forward(self, input):
         output = input
@@ -135,6 +136,7 @@ class Decoder(nn.Module):
             output = layer(output)
 
         output = self.output_conv(output)
+        output = self.loss(output)
 
         return output
 
