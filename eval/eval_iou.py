@@ -20,6 +20,7 @@ from torchvision.transforms import ToTensor, ToPILImage
 
 from dataset import cityscapes
 from erfnet import ERFNet
+from erfnet_isomax import ERFNet_IsoMax
 from enet import ENet
 from bisenet import BiSeNet
 from transform import Relabel, ToLabel, Colorize
@@ -49,6 +50,8 @@ def main(args):
 
     if args.model == "erfnet":
         model = ERFNet(NUM_CLASSES)
+    elif args.model == "erfnet_isomax":
+        model = ERFNet_IsoMax(NUM_CLASSES)
     elif args.model == "enet":
         model = ENet(NUM_CLASSES)
     elif args.model == "bisenet":

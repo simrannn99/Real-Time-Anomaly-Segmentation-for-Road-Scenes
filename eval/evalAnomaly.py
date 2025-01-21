@@ -43,7 +43,7 @@ def initialize_model(weights_path, use_cpu, model_name):
 
     if model_name == "erfnet":
         model = ERFNet(NUM_CLASSES)
-    if model_name == "erfnet_isomax":
+    elif model_name == "erfnet_isomax":
         model = ERFNet_IsoMax(NUM_CLASSES)
     elif model_name == "enet":
         model = ENet(NUM_CLASSES)

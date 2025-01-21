@@ -278,7 +278,7 @@ def train(args, model, enc=False):
             criterion = FocalLoss(gamma=2, alpha= [1] * 20)
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
-    elif args.model == "erfnet_isomaxplus":
+    elif args.model == "erfnet_isomax":
         if args.loss == "cross_entropy":
             criterion = IsoMaxPlusLossSecondPart(args.entropicScale)
         elif args.loss == "focal_loss":
