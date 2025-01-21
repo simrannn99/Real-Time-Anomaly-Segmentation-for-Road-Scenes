@@ -49,6 +49,12 @@ class IsoMaxPlusLossSecondPart(nn.Module):
         """Therefore, nn.CrossEntropyLoss() must not be used to calculate the loss"""
         #############################################################################
         #############################################################################
+        """
+        logits: B x num_classes x H x W
+        targets: B x H x W
+        """
+        B, C, H, W = logits.size()
+        logits = logits.permute(0, 2, 3, 1).reshape(-1, C)  # Reshape to (B*H*W) x num_classes
         distances = -logits
         probabilities_for_training = nn.Softmax(dim=1)(-self.entropic_scale * distances)
         probabilities_at_targets = probabilities_for_training[range(distances.size(0)), targets]
