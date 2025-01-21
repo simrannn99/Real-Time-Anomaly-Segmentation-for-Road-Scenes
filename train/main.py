@@ -275,7 +275,7 @@ def train(args, model, enc=False):
         if args.loss == "cross_entropy":
             criterion = CrossEntropyLoss2d(weight)
         elif args.loss == "focal_loss":
-            criterion = FocalLoss(gamma=2, alpha= [1] * 20)
+            criterion = FocalLoss(gamma=args.gamma, alpha= [1] * 20)
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
     elif args.model == "erfnet_isomax":
@@ -725,6 +725,7 @@ if __name__ == '__main__':
     parser.add_argument('--loss', default="cross_entropy") # [ "cross_entropy", "focal_loss"]
     parser.add_argument('--logit-norm', action='store_true', default=False)
     parser.add_argument('--entropicScale', type=float, default=10.0)
+    parser.add_argument('--gamma', type=float, default=2.0)
     
     parser.add_argument('--pretrained', action='store_true')
     parser.add_argument('--loadDir',default="../trained_models/")
