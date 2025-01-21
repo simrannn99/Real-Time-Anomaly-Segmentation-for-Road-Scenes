@@ -6,6 +6,7 @@ import random
 from PIL import Image
 import numpy as np
 from erfnet import ERFNet
+from erfnet_isomax import ERFNet_IsoMax
 from enet import ENet
 from bisenet import BiSeNet
 import os.path as osp
@@ -42,6 +43,8 @@ def initialize_model(weights_path, use_cpu, model_name):
 
     if model_name == "erfnet":
         model = ERFNet(NUM_CLASSES)
+    if model_name == "erfnet_isomax":
+        model = ERFNet_IsoMax(NUM_CLASSES)
     elif model_name == "enet":
         model = ENet(NUM_CLASSES)
     elif model_name == "bisenet":
