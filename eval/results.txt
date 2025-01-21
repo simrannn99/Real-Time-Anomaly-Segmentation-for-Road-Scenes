@@ -659,3 +659,87 @@ Model: ERFNET_ISOMAX
 Dataset name: RoadAnomaly
 	Metric: maxLogit
 	AUPRC score: 9.2671548463861   FPR@TPR95: 93.67296834594276
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: RoadAnomaly21
+	Metric: msp Temperature: 1
+	AUPRC score: 19.584275097274826   FPR@TPR95: 82.93709691648381
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: RoadAnomaly21
+	Metric: maxEntropy
+	AUPRC score: 19.306593828471165   FPR@TPR95: 81.9590563447287
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: RoadObsticle21
+	Metric: msp Temperature: 1
+	AUPRC score: 1.4692359806039397   FPR@TPR95: 73.78137876097988
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: RoadObsticle21
+	Metric: maxLogit
+	AUPRC score: 1.443018327973727   FPR@TPR95: 73.95923452218497
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: RoadObsticle21
+	Metric: maxEntropy
+	AUPRC score: 1.4515024010472828   FPR@TPR95: 73.8600544108295
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: FS_LostFound_full
+	Metric: msp Temperature: 1
+	AUPRC score: 0.6256681420929673   FPR@TPR95: 93.09434033435468
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: fs_static
+	Metric: maxEntropy
+	AUPRC score: 5.303052117362276   FPR@TPR95: 67.00173793158596
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 5.349732726363796   FPR@TPR95: 65.18277977467443
+
+Weights: ../save/erfnet_isomax_focal_loss/model_best.pth
+Model: ERFNET_ISOMAX
+Dataset name: RoadAnomaly
+	Metric: maxLogit
+	AUPRC score: 12.252373564172645   FPR@TPR95: 86.28907298984632
+
+Weights: ../save/erfnet_focal_loss0/model_best.pth
+Model: ERFNET
+Dataset name: RoadObsticle21
+	Metric: maxEntropy
+	AUPRC score: 1.3298068765904452   FPR@TPR95: 91.48306151379853
+
+Weights: ../save/erfnet_focal_loss0/model_best.pth
+Model: ERFNET
+Dataset name: FS_LostFound_full
+	Metric: maxLogit
+	AUPRC score: 7.522115398782969   FPR@TPR95: 40.702688489654484
+
+Weights: ../save/erfnet_focal_loss0/model_best.pth
+Model: ERFNET
+Dataset name: fs_static
+	Metric: msp Temperature: 1
+	AUPRC score: 9.91632329759894   FPR@TPR95: 37.000070375013394
+
+Weights: ../save/erfnet_focal_loss0/model_best.pth
+Model: ERFNET
+Dataset name: fs_static
+	Metric: maxEntropy
+	AUPRC score: 11.849131731407878   FPR@TPR95: 37.14188474397558
+
+Weights: ../save/erfnet_focal_loss0/model_best.pth
+Model: ERFNET
+Dataset name: RoadAnomaly
+	Metric: maxLogit
+	AUPRC score: 11.2652124737644   FPR@TPR95: 76.82309891369721
