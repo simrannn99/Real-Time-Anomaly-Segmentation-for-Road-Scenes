@@ -55,16 +55,9 @@ class IsoMaxPlusLossSecondPart(nn.Module):
         """
         B, C, H, W = logits.size()
         logits = logits.permute(0, 2, 3, 1).reshape(-1, C)  # Reshape to (B*H*W) x num_classes
+        targets = targets.view(-1)  # Flatten to (B*H*W)
         distances = -logits
-        probabilities_for_training = nn.Softmax(dim=1)(-self.entropic_scale * distances)
-        probabilities_at_targets = probabilities_for_training[range(distances.size(0)), targets]
-        loss = -torch.log(probabilities_at_targets).mean()
-        if not debug:
-            return loss
-        else:
-            targets_one_hot = torch.eye(distances.size(1))[targets].long().cuda()
-            intra_inter_distances = torch.where(targets_one_hot != 0, distances, torch.Tensor([float('Inf')]).cuda())
-            inter_intra_distances = torch.where(targets_one_hot != 0, torch.Tensor([float('Inf')]).cuda(), distances)
-            intra_distances = intra_inter_distances[intra_inter_distances != float('Inf')]
-            inter_distances = inter_intra_distances[inter_intra_distances != float('Inf')]
-            return loss, 1.0, intra_distances, inter_distances
+        probabilities = F.softmax(-self.entropic_scale * distances, dim=1)
+        probabilities_at_targets = probabilities[torch.arange(len(targets)), targets]
+        loss = -torch.log(probabilities_at_targets + 1e-12).mean()
+        return loss
