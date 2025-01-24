@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-
+from focal_loss import FocalLoss
 
 def make_one_hot(labels, classes):
     one_hot = torch.FloatTensor(labels.size()[0], classes, labels.size()[2], labels.size()[3]).zero_().to(labels.device)
@@ -45,3 +45,15 @@ class CE_DiceLoss(nn.Module):
         CE_loss = self.cross_entropy(output, target)
         dice_loss = self.dice(output, target)
         return CE_loss + dice_loss
+    
+class FocalLoss_DiceLoss(nn.Module):
+    def __init__(self, smooth=1, gamma=2.0, alpha= [1] * 20):
+        super(FocalLoss_DiceLoss, self).__init__()
+        self.smooth = smooth
+        self.dice = DiceLoss()
+        self.focal = FocalLoss(gamma=gamma, alpha=alpha)
+    
+    def forward(self, output, target):
+        focal_loss = self.focal(output, target)
+        dice_loss = self.dice(output, target)
+        return focal_loss + dice_loss

@@ -37,6 +37,7 @@ from logit_norm_loss import LogitNormLoss
 from focal_loss import FocalLoss
 from dice_loss import DiceLoss
 from dice_loss import CE_DiceLoss
+from dice_loss import FocalLoss_DiceLoss
 
 NUM_CHANNELS = 3
 NUM_CLASSES = 20 #pascal=22, cityscapes=20
@@ -282,6 +283,8 @@ def train(args, model, enc=False):
             criterion = DiceLoss()
         elif args.loss == "CE_dice_loss":
             criterion = CE_DiceLoss(weight=weight)
+        elif args.loss == "focal_loss_dice_loss":
+            criterion = FocalLoss_DiceLoss()
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
     elif args.model == "erfnet_isomax":
