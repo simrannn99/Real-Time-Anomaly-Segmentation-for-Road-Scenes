@@ -10,15 +10,11 @@ def make_one_hot(labels, classes):
     return target
 
 class DiceLoss(nn.Module):
-    def __init__(self, smooth=1., ignore_index=None):
+    def __init__(self, smooth=1.):
         super(DiceLoss, self).__init__()
-        self.ignore_index = ignore_index
         self.smooth = smooth
 
     def forward(self, output, target):
-        if self.ignore_index not in range(target.min(), target.max()):
-            if (target == self.ignore_index).sum() > 0:
-                target[target == self.ignore_index] = target.min()
         target = make_one_hot(target.unsqueeze(dim=1), classes=output.size()[1])
         output = F.softmax(output, dim=1)
         output_flat = output.contiguous().view(-1)
