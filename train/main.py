@@ -35,6 +35,7 @@ from calculate_class_weights import calculate_class_weights, calculate_class_wei
 
 from logit_norm_loss import LogitNormLoss
 from focal_loss import FocalLoss
+from dice_loss import DiceLoss
 
 NUM_CHANNELS = 3
 NUM_CLASSES = 20 #pascal=22, cityscapes=20
@@ -276,6 +277,8 @@ def train(args, model, enc=False):
             criterion = CrossEntropyLoss2d(weight)
         elif args.loss == "focal_loss":
             criterion = FocalLoss(gamma=args.gamma, alpha= [1] * 20)
+        elif args.loss == "dice_loss":
+            criterion = DiceLoss()
         if args.logit_norm:
             criterion = LogitNormLoss(loss_func=criterion)
     elif args.model == "erfnet_isomax":
