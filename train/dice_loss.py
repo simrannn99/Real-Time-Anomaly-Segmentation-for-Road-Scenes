@@ -23,3 +23,25 @@ class DiceLoss(nn.Module):
         loss = 1 - ((2. * intersection + self.smooth) /
                     (output_flat.sum() + target_flat.sum() + self.smooth))
         return loss
+    
+class CrossEntropyLoss2d(torch.nn.Module):
+
+    def __init__(self, weight=None):
+        super().__init__()
+
+        self.loss = torch.nn.NLLLoss2d(weight)
+
+    def forward(self, outputs, targets):
+        return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
+    
+class CE_DiceLoss(nn.Module):
+    def __init__(self, smooth=1, weight=None):
+        super(CE_DiceLoss, self).__init__()
+        self.smooth = smooth
+        self.dice = DiceLoss()
+        self.cross_entropy = CrossEntropyLoss2d(weight=weight)
+    
+    def forward(self, output, target):
+        CE_loss = self.cross_entropy(output, target)
+        dice_loss = self.dice(output, target)
+        return CE_loss + dice_loss
