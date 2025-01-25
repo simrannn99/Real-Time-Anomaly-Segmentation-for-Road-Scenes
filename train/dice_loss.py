@@ -1,3 +1,11 @@
+"""
+Paper:      Generalised Dice overlap as a deep learning loss function for highly unbalanced segmentations
+Url:        https://arxiv.org/abs/1707.03237
+Create by:  yassouali
+Code:       https://github.com/yassouali/pytorch-segmentation/blob/master/utils/losses.py
+
+"""
+
 import numpy as np
 import torch
 import torch.nn.functional as F
