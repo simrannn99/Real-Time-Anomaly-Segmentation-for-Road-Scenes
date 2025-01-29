@@ -710,7 +710,7 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--cuda', action='store_true', default=True)  #NOTE: cpu-only has not been tested so you might have to change code if you deactivate this flag
-    parser.add_argument('--model', default="erfnet")
+    parser.add_argument('--model', default="erfnet") # ["erfnet", "enet", "bisenet", "erfnet_isomax"]
     parser.add_argument('--state')
     parser.add_argument('--num_gpus', type=int, default=1, help="Number of GPUs to use")
     parser.add_argument('--port', type=int, default=8097)
@@ -731,9 +731,9 @@ if __name__ == '__main__':
     parser.add_argument('--iouVal', action='store_true', default=True)  
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
 
-    parser.add_argument('--loss', default="cross_entropy") # [ "cross_entropy", "focal_loss"]
+    parser.add_argument('--loss', default="cross_entropy") # [ "cross_entropy", "focal_loss", "dice_loss", "CE_dice_loss", "focal_loss_dice_loss"]
     parser.add_argument('--logit-norm', action='store_true', default=False)
-    parser.add_argument('--entropicScale', type=float, default=10.0)
+    parser.add_argument('--entropicScale', type=float, default=10.0) # for isomax loss
     parser.add_argument('--gamma', type=float, default=2.0)
     
     parser.add_argument('--pretrained', action='store_true')
