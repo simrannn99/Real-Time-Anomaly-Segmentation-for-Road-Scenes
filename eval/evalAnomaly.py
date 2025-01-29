@@ -18,7 +18,7 @@ from torchvision.transforms import Compose, Resize
 from torchvision.transforms import ToTensor
 import torch.nn.functional as F
 import cv2
-from visualize import save_colored_score_image, visualize_mask
+from visualize import save_images
 
 seed = 42
 NUM_CHANNELS = 3
@@ -37,37 +37,6 @@ torch.manual_seed(seed)
 # gpu training specific
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = True
-
-
-def save_images(input_path, anomaly_score, ood_gts, args):
-    """
-    Save images with colored score overlays, ground truth labels, and the original cropped image.
-
-    Parameters:
-        input_path (str): Path to the input image.
-        anomaly_score (numpy.ndarray): Anomaly score map for the image.
-        ood_gt (numpy.ndarray): Ground truth label mask for the image.
-        args: Command-line arguments containing save directory and related options.
-    """
-
-    # Extract file name and directory
-    file_name = osp.splitext(osp.basename(input_path))[0]
-    save_dir = osp.dirname(args.save_output)
-    os.makedirs(save_dir, exist_ok=True)
-
-    # Save the colored anomaly score image
-    save_colored_score_image(
-        input_path, anomaly_score, save_path=save_dir, file_name=f"{file_name}_score"
-    )
-
-    # Save the ground truth mask with a colored overlay
-    cv2.imwrite(f"{save_dir}/{file_name}_ground_truth_colored.png", visualize_mask(ood_gts))
-
-    # Save the original cropped image
-    image = cv2.imread(input_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = cv2.resize(image, (anomaly_score.shape[1], anomaly_score.shape[0]))
-    cv2.imwrite(f"{save_dir}/{file_name}_original.png", cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
 
 def initialize_model(weights_path, use_cpu, model_name):
@@ -166,7 +135,7 @@ def evaluate_model(model, input_paths, args):
         mask, ood_gts = adjust_labels(path)
         if args.save_output:
             # Call save_images to save outputs
-            save_images(path, anomaly_result, ood_gts, args)
+            save_images(path, anomaly_result, ood_gts, args.save_output)
 
         if 1 not in np.unique(ood_gts):
             continue              

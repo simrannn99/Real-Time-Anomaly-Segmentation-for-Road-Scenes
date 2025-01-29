@@ -1037,3 +1037,9 @@ Model: ERFNET
 Dataset name: RoadAnomaly21
 	Metric: msp Temperature: 1
 	AUPRC score: 28.844997719526926   FPR@TPR95: 59.01943325200235
+
+Weights: ../save/erfnet_dice_loss/model_best.pth
+Model: ERFNET
+Dataset name: RoadAnomaly21
+	Metric: maxLogit
+	AUPRC score: 34.96925854120663   FPR@TPR95: 51.1596337719049

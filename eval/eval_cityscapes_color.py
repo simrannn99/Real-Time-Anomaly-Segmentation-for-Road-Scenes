@@ -18,6 +18,9 @@ from torchvision.transforms import ToTensor, ToPILImage
 
 from dataset import cityscapes
 from erfnet import ERFNet
+from erfnet_isomax import ERFNet_IsoMax
+from enet import ENet
+from bisenet import BiSeNet
 from transform import Relabel, ToLabel, Colorize
 
 import visdom
