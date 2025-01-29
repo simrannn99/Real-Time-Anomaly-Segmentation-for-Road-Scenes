@@ -50,14 +50,25 @@ class IsoMaxPlusLossSecondPart(nn.Module):
         #############################################################################
         #############################################################################
         """
-        logits: B x num_classes x H x W
-        targets: B x H x W
+        logits: Logits of shape (B, num_classes, H, W).
+        targets: Ground truth labels of shape (B, H, W).
+        
         """
-        B, C, H, W = logits.size()
-        logits = logits.permute(0, 2, 3, 1).reshape(-1, C)  # Reshape to (B*H*W) x num_classes
-        targets = targets.view(-1)  # Flatten to (B*H*W)
+
+        B, C, H, W = logits.shape
+
+        # Reshape logits to (B*H*W, num_classes) and flatten targets to (B*H*W)
+        logits = logits.permute(0, 2, 3, 1).reshape(-1, C)
+        targets = targets.view(-1)
+
+        # Compute negative logits and apply softmax scaling
         distances = -logits
         probabilities = F.softmax(-self.entropic_scale * distances, dim=1)
-        probabilities_at_targets = probabilities[torch.arange(len(targets)), targets]
-        loss = -torch.log(probabilities_at_targets + 1e-12).mean()
+
+        # Extract probabilities corresponding to target classes
+        target_probabilities = probabilities[torch.arange(targets.numel()), targets]
+
+        # Compute entropic loss
+        loss = -torch.log(target_probabilities + 1e-12).mean()
+        
         return loss

@@ -62,36 +62,51 @@ cityscapes_trainIds2labelIds = Compose([
     Relabel(255, 0),
     ToPILImage(),
 ])
+def initialize_model(weights_path, use_cpu, model_name):
+    print ("Loading model: " + model_name)
+    print ("Loading weights: " + weights_path)
+
+    if model_name == "erfnet":
+        model = ERFNet(NUM_CLASSES)
+    elif model_name == "erfnet_isomax":
+        model = ERFNet_IsoMax(NUM_CLASSES)
+    elif model_name == "enet":
+        model = ENet(NUM_CLASSES)
+    elif model_name == "bisenet":
+        model = BiSeNet(NUM_CLASSES)
+
+    if (not use_cpu):
+        model = torch.nn.DataParallel(model).cuda()
+    def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements   
+        own_state = model.state_dict()
+        for name, param in state_dict.items():
+            if name not in own_state:
+                if name.startswith("module."):
+                    own_state[name.split("module.")[-1]].copy_(param)
+                else:
+                    print(name, " not loaded")
+                    continue
+            else:
+                own_state[name].copy_(param)
+        return model
+    if model_name == "enet" or model_name == "bisenet":
+        model = load_my_state_dict(model.module, torch.load(weights_path))
+    else:
+        model = load_my_state_dict(model, torch.load(weights_path, map_location=lambda storage, loc: storage))
+    print ("Model and weights LOADED successfully")
+    return model
 
 def main(args):
-
-    modelpath = args.loadDir + args.loadModel
-    weightspath = args.loadDir + args.loadWeights
-
-    print ("Loading model: " + modelpath)
-    print ("Loading weights: " + weightspath)
-
     #Import ERFNet model from the folder
     #Net = importlib.import_module(modelpath.replace("/", "."), "ERFNet")
-    model = ERFNet(NUM_CLASSES)
-  
-    model = torch.nn.DataParallel(model)
-    if (not args.cpu):
-        model = model.cuda()
+   
 
     #model.load_state_dict(torch.load(args.state))
     #model.load_state_dict(torch.load(weightspath)) #not working if missing key
 
-    def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements
-        own_state = model.state_dict()
-        for name, param in state_dict.items():
-            if name not in own_state:
-                 continue
-            own_state[name].copy_(param)
-        return model
-
-    model = load_my_state_dict(model, torch.load(weightspath))
-    print ("Model and weights LOADED successfully")
+    # Load the model
+    weightspath = args.loadDir + args.loadWeights
+    model = initialize_model(weightspath, args.cpu, args.model)
 
     model.eval()
 
@@ -138,13 +153,13 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     parser.add_argument('--state')
-
+    parser.add_argument('--model', default="erfnet") 
     parser.add_argument('--loadDir',default="../trained_models/")
     parser.add_argument('--loadWeights', default="erfnet_pretrained.pth")
     parser.add_argument('--loadModel', default="erfnet.py")
     parser.add_argument('--subset', default="val")  #can be val, test, train, demoSequence
 
-    parser.add_argument('--datadir', default=os.getenv("HOME") + "/datasets/cityscapes/")
+    parser.add_argument('--datadir', default="/home/shyam/ViT-Adapter/segmentation/data/cityscapes/")
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=1)
     parser.add_argument('--cpu', action='store_true')
