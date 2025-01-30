@@ -1,5 +1,22 @@
-# Real-Time-Anomaly-Segmentation [[Course Project](https://docs.google.com/document/d/1ElljsAprT2qX8RpePSQ3E00y_3oXrtN_CKYC6wqxyFQ/edit?usp=sharing)]
-This repository provides a starter-code setup for the Real-Time Anomaly Segmentation project of the Machine Learning Course. It consists of the code base for training ERFNet on the Cityscapes dataset and perform anomaly segmentation.
+# Real-Time-Anomaly-Segmentation for Road Scenes
+This repository contains the code for the __Real-Time Anomaly Segmentation for Road Scenes__ project, developed as part of the Advanced Machine Learning course at the Polytechnic University of Turin. 
+
+
+### Visualization of result
+Visualization of the results produced by the ERFNet model with the MaxLogit inference method.
+
+
+<p>
+  <img src="samples/9_original.png" alt="Tractor" style="height:128px;width:256px;"/>
+</p>
+<p>
+  <img src="samples/9_ground_truth_colored.png" alt="Tractor Ground Truth Anomaly" style="height:128px;width:256px;"/>
+</p>
+<p>
+  <img src="samples/9_score.png" alt="Tractor Anomaly Scores" style="height:128px;width:256px;"/>
+</p>
+The top row contains the original images, the middle row represents the ground truth anomalies, and the bottom row visualizes the estimated anomaly scores, where hotter colors correspond to higher anomaly levels.
+
 
 ## Packages
 For instructions, please refer to the README in each folder:
@@ -8,6 +25,7 @@ For instructions, please refer to the README in each folder:
 * [eval](eval) contains tools for evaluating/visualizing the network's output and performing anomaly segmentation.
 * [imagenet](imagenet) Contains script and model for pretraining ERFNet's encoder in Imagenet.
 * [trained_models](trained_models) Contains the trained models used in the papers. 
+* [save](save) Contains the models trained for our experiments. 
 
 ## Requirements:
 
@@ -17,6 +35,8 @@ For instructions, please refer to the README in each folder:
 * **Additional Python packages**: numpy, matplotlib, Pillow, torchvision and visdom (optional for --visualize flag)
 * **For testing the anomaly segmentation model**: Road Anomaly, Road Obstacle, and Fishyscapes dataset. All testing images are provided here [Link](https://drive.google.com/file/d/1r2eFANvSlcUjxcerjC8l6dRa0slowMpx/view).
 
-## Anomaly Inference:
-* The repo provides a pre-trained ERFNet on the cityscapes dataset that can be used to perform anomaly segmentation on test anomaly datasets.
-* Anomaly Inference Command:```python evalAnomaly.py --input '/home/shyam/ViT-Adapter/segmentation/unk-dataset/RoadAnomaly21/images/*.png```. Change the dataset path ```'/home/shyam/ViT-Adapter/segmentation/unk-dataset/RoadAnomaly21/images/*.png```accordingly.
+## Segmentantion models:
+The repo provides the following pre-trained networks on the cityscapes dataset that can be used to perform anomaly segmentation on test anomaly datasets:
+* __ERFNet__ 
+* __BiSeNetV2__ 
+* __Enet__ 
