@@ -1,9 +1,9 @@
 # Real-Time-Anomaly-Segmentation for Road Scenes
 This repository contains the code for the __Real-Time Anomaly Segmentation for Road Scenes__ project, developed as part of the Advanced Machine Learning course at the Polytechnic University of Turin. 
-
+This repository is associated with the corresponding paper [s303369_s300269_s314589_project6.pdf](s303369_s300269_s314589_project6.pdf).
 
 ### Visualization of result
-Visualization of the results produced by the ERFNet model with the MaxLogit inference method.
+Below is an example of anomaly segmentation using the ERFNet model with the Max Logit inference method.
 
 
 <p>
@@ -15,7 +15,7 @@ Visualization of the results produced by the ERFNet model with the MaxLogit infe
 <p>
   <img src="samples/9_score.png" alt="Tractor Anomaly Scores" style="height:128px;width:256px;"/>
 </p>
-The top row contains the original images, the middle row represents the ground truth anomalies, and the bottom row visualizes the estimated anomaly scores, where hotter colors correspond to higher anomaly levels.
+The top row contains the original images, the middle row represents the ground truth anomalies, and the bottom row visualizes the estimated anomaly scores,  where deeper shades of red indicate higher anomaly levels.
 
 
 ## Packages
@@ -34,6 +34,9 @@ For instructions, please refer to the README in each folder:
 * [**PyTorch**](http://pytorch.org/): Make sure to install the Pytorch version for Python 3.6 with CUDA support (code only tested for CUDA 8.0). 
 * **Additional Python packages**: numpy, matplotlib, Pillow, torchvision and visdom (optional for --visualize flag)
 * **For testing the anomaly segmentation model**: Road Anomaly, Road Obstacle, and Fishyscapes dataset. All testing images are provided here [Link](https://drive.google.com/file/d/1r2eFANvSlcUjxcerjC8l6dRa0slowMpx/view).
+
+## Notebook
+For running the evaluation, you can use `Real_Time_Anomaly_Segmentation_for_Road_Scenes.ipynb` which contains some useful commands.
 
 ## Segmentantion models:
 The repo provides the following pre-trained networks on the cityscapes dataset that can be used to perform anomaly segmentation on test anomaly datasets:
